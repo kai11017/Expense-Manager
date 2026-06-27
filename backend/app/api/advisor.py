@@ -30,10 +30,19 @@ def get_dashboard_summary(
     monthly_spending = 0.0
     monthly_income = 0.0
     
+    # All-time cash balance
+    all_time_income = 0.0
+    all_time_expenses = 0.0
+    
     # Group by category for top category calculation
     cat_spending = defaultdict(float)
     
     for t in txns:
+        if t.type == "income":
+            all_time_income += t.amount
+        elif t.type == "expense":
+            all_time_expenses += t.amount
+            
         # Date parsing
         try:
             dt = datetime.strptime(t.date, "%Y-%m-%d")
@@ -80,7 +89,8 @@ def get_dashboard_summary(
             "total_value": val
         })
         
-    net_worth = financial_value + life_value
+    cash_balance = max(0.0, all_time_income - all_time_expenses)
+    net_worth = financial_value + life_value + cash_balance
     
     overall_gain_pct = 0.0
     if financial_cost > 0:
@@ -143,3 +153,48 @@ def get_predictions(
     txns = db.query(Transaction).filter(Transaction.user_id == current_user.id).all()
     pred_data = get_predictions_and_warnings(txns)
     return pred_data
+
+
+@router.get("/history")
+def get_monthly_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    txns = db.query(Transaction).filter(Transaction.user_id == current_user.id).all()
+    
+    # Structure: { 'YYYY-MM': { 'income': 0, 'expenses': 0, 'investments': 0 } }
+    history = {}
+    
+    for t in txns:
+        try:
+            dt = datetime.strptime(t.date, "%Y-%m-%d")
+            month_key = dt.strftime("%Y-%m")
+            
+            if month_key not in history:
+                history[month_key] = {
+                    'month': month_key,
+                    'income': 0.0,
+                    'expenses': 0.0,
+                    'investments': 0.0,
+                    'savings': 0.0
+                }
+                
+            if t.type == 'income':
+                history[month_key]['income'] += t.amount
+            elif t.type == 'expense':
+                history[month_key]['expenses'] += t.amount
+                
+                # If it's a life portfolio expense, count as investment
+                if t.is_life_portfolio:
+                    history[month_key]['investments'] += t.amount
+                    
+        except Exception:
+            continue
+            
+    # Calculate savings for each month
+    for mk in history:
+        history[mk]['savings'] = history[mk]['income'] - history[mk]['expenses']
+        
+    # Sort by month descending
+    sorted_history = sorted(list(history.values()), key=lambda x: x['month'], reverse=True)
+    return sorted_history

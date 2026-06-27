@@ -125,9 +125,9 @@ export default function Portfolio() {
 
   // Predefined colors for life assets
   const lifeColors = {
-    "Health": "#10B981",       // emerald
+    "Health": "#4F46E5",       // emerald
     "Learning": "#8B5CF6",     // violet
-    "Experiences": "#06B6D4",  // cyan
+    "Experiences": "#F97316",  // cyan
     "Emergency Fund": "#F59E0B" // amber
   };
 
@@ -146,7 +146,7 @@ export default function Portfolio() {
         </div>
         
         {/* Toggle tabs */}
-        <div className="p-1 bg-white/5 border border-glassBorder rounded-xl flex">
+        <div className="p-1 bg-gray-100 border border-gray-200 rounded-xl flex">
           <button
             onClick={() => {
               setActiveTab('financial');
@@ -190,7 +190,7 @@ export default function Portfolio() {
 
             <div className="glass-card p-5">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Overall Gains / Losses</span>
-              <div className={`text-2xl font-bold ${summary.overall_gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <div className={`text-2xl font-bold ${summary.overall_gain >= 0 ? 'text-indigo-600' : 'text-rose-400'}`}>
                 {summary.overall_gain >= 0 ? '+' : ''}{formatCurrency(summary.overall_gain)}
               </div>
               <p className="text-[10px] text-gray-400 mt-2">Absolute profit across held equities and bullion</p>
@@ -198,7 +198,7 @@ export default function Portfolio() {
 
             <div className="glass-card p-5">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Weighted Return Rate</span>
-              <div className="text-2xl font-bold text-emerald-400 flex items-center space-x-1">
+              <div className="text-2xl font-bold text-indigo-600 flex items-center space-x-1">
                 <Percent size={18} />
                 <span>+{(summary.overall_gain / (summary.total_financial_value - summary.overall_gain) * 100).toFixed(1)}%</span>
               </div>
@@ -238,7 +238,7 @@ export default function Portfolio() {
                   <span className="text-xs text-gray-500">No assets logged yet</span>
                 )}
               </div>
-              <div className="w-full flex flex-wrap gap-2 text-[10px] text-gray-400 border-t border-glassBorder/40 pt-4 mt-2 justify-center">
+              <div className="w-full flex flex-wrap gap-2 text-[10px] text-gray-400 border-t border-gray-200/40 pt-4 mt-2 justify-center">
                 {financialChartData.map(c => (
                   <div key={c.name} className="flex items-center space-x-1">
                     <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.color }}></span>
@@ -251,7 +251,7 @@ export default function Portfolio() {
             {/* Add Asset Form */}
             <div className="lg:col-span-2 glass-card p-5">
               <h3 className="text-md font-bold text-[var(--text-primary)] mb-4 flex items-center space-x-2">
-                <PlusCircle size={16} className="text-emerald-400" />
+                <PlusCircle size={16} className="text-indigo-600" />
                 <span>Acquire Traditional Asset</span>
               </h3>
               <form onSubmit={handleAddAsset} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -350,7 +350,7 @@ export default function Portfolio() {
             <h3 className="text-md font-bold text-white mb-4">Financial Ledger Holdings</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-[var(--text-primary)]">
-                <thead className="bg-white/5 border-b border-glassBorder text-gray-400 uppercase tracking-wider">
+                <thead className="bg-gray-100 border-b border-gray-200 text-gray-400 uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-4 rounded-l-lg">Asset Name</th>
                     <th className="py-3 px-4">Type</th>
@@ -365,23 +365,23 @@ export default function Portfolio() {
                 </thead>
                 <tbody className="divide-y divide-glassBorder/30">
                   {financialAssets.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-white/5 transition-all">
+                    <tr key={asset.id} className="hover:bg-gray-100 transition-all">
                       <td className="py-3.5 px-4 font-semibold text-[var(--text-primary)]">{asset.name}</td>
                       <td className="py-3.5 px-4">
-                        <span className="text-[10px] px-2 py-0.5 bg-white/5 rounded-full border border-white/5 uppercase tracking-wider text-gray-400">
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 rounded-full border border-white/5 uppercase tracking-wider text-gray-400">
                           {asset.type}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">{formatCurrency(asset.purchase_price)}</td>
                       <td className="py-3.5 px-4 text-right">{formatCurrency(asset.current_value)}</td>
                       <td className="py-3.5 px-4 text-right">{asset.quantity}</td>
-                      <td className={`py-3.5 px-4 text-right font-bold ${asset.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <td className={`py-3.5 px-4 text-right font-bold ${asset.profit_loss >= 0 ? 'text-indigo-600' : 'text-rose-400'}`}>
                         {asset.profit_loss >= 0 ? '+' : ''}{formatCurrency(asset.profit_loss)}
                       </td>
-                      <td className={`py-3.5 px-4 text-right font-bold ${asset.return_percentage >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <td className={`py-3.5 px-4 text-right font-bold ${asset.return_percentage >= 0 ? 'text-indigo-600' : 'text-rose-400'}`}>
                         {asset.return_percentage >= 0 ? '+' : ''}{asset.return_percentage.toFixed(1)}%
                       </td>
-                      <td className="py-3.5 px-4 text-right font-semibold text-emerald-400">{asset.allocation.toFixed(1)}%</td>
+                      <td className="py-3.5 px-4 text-right font-semibold text-indigo-600">{asset.allocation.toFixed(1)}%</td>
                       <td className="py-3.5 px-4 text-center">
                         <button
                           onClick={() => handleDeleteAsset(asset.id)}
@@ -423,7 +423,7 @@ export default function Portfolio() {
           {/* Life Portfolio KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
             <div className="glass-card p-5 flex items-center space-x-4">
-              <div className="p-3 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/10">
+              <div className="p-3 rounded-xl bg-emerald-600/10 text-indigo-600 border border-indigo-100">
                 <Heart size={22} />
               </div>
               <div>
@@ -503,7 +503,7 @@ export default function Portfolio() {
                   <span className="text-xs text-gray-500">No life capital logged</span>
                 )}
               </div>
-              <div className="w-full flex flex-wrap gap-2 text-[10px] text-gray-400 border-t border-glassBorder/40 pt-4 mt-2 justify-center">
+              <div className="w-full flex flex-wrap gap-2 text-[10px] text-gray-400 border-t border-gray-200/40 pt-4 mt-2 justify-center">
                 {lifeChartData.map(c => (
                   <div key={c.name} className="flex items-center space-x-1">
                     <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.color }}></span>
@@ -589,7 +589,7 @@ export default function Portfolio() {
             <h3 className="text-md font-bold text-white mb-4">Life Capital Assets Registry</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-[var(--text-primary)]">
-                <thead className="bg-white/5 border-b border-glassBorder text-gray-400 uppercase tracking-wider">
+                <thead className="bg-gray-100 border-b border-gray-200 text-gray-400 uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-4 rounded-l-lg">Capital Asset</th>
                     <th className="py-3 px-4">Dimension</th>
@@ -600,7 +600,7 @@ export default function Portfolio() {
                 </thead>
                 <tbody className="divide-y divide-glassBorder/30">
                   {lifeAssets.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-white/5 transition-all">
+                    <tr key={asset.id} className="hover:bg-gray-100 transition-all">
                       <td className="py-3.5 px-4 font-semibold text-[var(--text-primary)]">{asset.name}</td>
                       <td className="py-3.5 px-4">
                         <span className="text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider" 

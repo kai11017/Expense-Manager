@@ -81,7 +81,7 @@ export default function AIAdvisor() {
       }
       if (trimmed.startsWith('ℹ️') || trimmed.startsWith('⚠️') || trimmed.startsWith('✅') || trimmed.startsWith('🚨')) {
         return (
-          <div key={idx} className="p-3 bg-white/[0.03] border border-white/5 rounded-xl text-sm text-[var(--text-primary)] leading-relaxed mb-3 flex gap-2">
+          <div key={idx} className="p-3 bg-gray-50 border border-white/5 rounded-xl text-sm text-[var(--text-primary)] leading-relaxed mb-3 flex gap-2">
             <span>{trimmed.slice(0, 2)}</span>
             <span className="flex-1">{parseBoldText(trimmed.slice(2))}</span>
           </div>
@@ -186,7 +186,7 @@ export default function AIAdvisor() {
               renderMarkdown(dashboardData.ai_advice)
             ) : (
               <div className="py-16 text-center animate-fade-in">
-                <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-white/5 flex items-center justify-center mx-auto mb-4">
                   <BrainCircuit size={24} className="text-gray-600" />
                 </div>
                 <p className="text-sm text-[var(--text-muted)] font-medium mb-1">No advisory report generated</p>
@@ -217,7 +217,7 @@ export default function AIAdvisor() {
           {/* AI Interactive Chat Box */}
           <div className="glass-card p-4 flex flex-col h-[400px] justify-between animate-fade-in-up delay-225">
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-[0.1em] mb-3 pb-2 border-b border-white/5">
-              <MessageSquare size={14} className="text-emerald-400" />
+              <MessageSquare size={14} className="text-indigo-600" />
               Consult Planner
             </h3>
 
@@ -236,13 +236,13 @@ export default function AIAdvisor() {
                   <div className={`p-3 rounded-2xl max-w-[80%] leading-relaxed ${
                     msg.role === 'user' 
                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white rounded-br-md shadow-md shadow-emerald-600/15' 
-                      : 'bg-white/[0.04] border border-white/5 text-[var(--text-primary)] rounded-bl-md'
+                      : 'bg-gray-100 border border-white/5 text-[var(--text-primary)] rounded-bl-md'
                   }`}>
                     <p>{msg.content}</p>
                   </div>
                   {msg.role === 'user' && (
-                    <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <UserIcon size={12} className="text-emerald-400" />
+                    <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <UserIcon size={12} className="text-indigo-600" />
                     </div>
                   )}
                 </div>
@@ -252,7 +252,7 @@ export default function AIAdvisor() {
                   <div className="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
                     <Bot size={12} className="text-purple-400" />
                   </div>
-                  <div className="bg-white/[0.04] border border-white/5 p-3 rounded-2xl rounded-bl-md max-w-[80%]">
+                  <div className="bg-gray-100 border border-white/5 p-3 rounded-2xl rounded-bl-md max-w-[80%]">
                     <div className="flex gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
                       <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -294,7 +294,7 @@ export default function AIAdvisor() {
                 <button
                   key={q.text}
                   onClick={() => setQuestion(q.text)}
-                  className="text-[10px] bg-white/[0.03] hover:bg-white/[0.06] text-[var(--text-muted)] hover:text-[var(--text-primary)] py-2 px-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-all duration-200 text-left flex items-center gap-1.5"
+                  className="text-[10px] bg-gray-50 hover:bg-gray-100 text-[var(--text-muted)] hover:text-[var(--text-primary)] py-2 px-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-all duration-200 text-left flex items-center gap-1.5"
                 >
                   <span>{q.icon}</span>
                   {q.text}

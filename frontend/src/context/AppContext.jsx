@@ -69,19 +69,91 @@ export const AppProvider = ({ children }) => {
   };
 
   // Register handler
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, otp_code) => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password, otp_code })
       });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.detail || 'Registration failed');
       }
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const requestOtp = async (email, type) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Failed to request OTP');
+      if (data.dev_otp) {
+        alert("DEV MODE: Your OTP is " + data.dev_otp);
+      }
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const resetPassword = async (email, otp_code, new_password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp_code, new_password })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Failed to reset password');
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const googleLogin = async (tokenId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenId })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Google login failed');
+      
+      setToken(data.access_token);
+      const userProfile = { email: data.email, name: data.name, id: data.user_id };
+      setUser(userProfile);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(userProfile));
       return true;
     } catch (err) {
       setError(err.message);
@@ -179,6 +251,9 @@ export const AppProvider = ({ children }) => {
       login,
       register,
       logout,
+      requestOtp,
+      resetPassword,
+      googleLogin,
       refreshData,
       getHeaders,
       API_BASE_URL

@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    otp_code: str
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -156,3 +157,21 @@ class DashboardSummary(BaseModel):
     prediction: float
     prediction_warning: Optional[str] = None
     ai_advice: str
+
+
+class OTPRequest(BaseModel):
+    email: EmailStr
+    type: str # "signup" or "reset"
+
+class OTPVerify(BaseModel):
+    email: EmailStr
+    otp_code: str
+    type: str
+
+class PasswordReset(BaseModel):
+    email: EmailStr
+    otp_code: str
+    new_password: str
+
+class GoogleLogin(BaseModel):
+    token: str

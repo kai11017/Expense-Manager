@@ -9,7 +9,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=True)
-    hashed_password = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=True)
+    auth_provider = Column(String, default="local") # "local" or "google"
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
@@ -91,3 +92,13 @@ class AIAdvice(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="advices")
+
+
+class OTP(Base):
+    __tablename__ = "otps"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True, nullable=False)
+    otp_code = Column(String, nullable=False)
+    type = Column(String, nullable=False) # "signup" or "reset"
+    expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False)

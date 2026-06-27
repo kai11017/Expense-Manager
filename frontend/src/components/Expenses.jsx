@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { 
   Plus, 
   Upload, 
-  Trash2, 
+  Trash2, Edit2, 
   Filter, 
   Sparkles, 
   FileSpreadsheet, 
@@ -27,6 +27,7 @@ export default function Expenses() {
   const [paymentMode, setPaymentMode] = useState('UPI');
   const [notes, setNotes] = useState('');
   const [isLifePortfolio, setIsLifePortfolio] = useState(false);
+  const [editingTxnId, setEditingTxnId] = useState(null);
   const [lifeCategory, setLifeCategory] = useState('Health');
 
   // File Upload State
@@ -135,6 +136,20 @@ export default function Expenses() {
   };
 
   // Delete transaction
+  const handleEdit = (txn) => {
+    setEditingTxnId(txn.id);
+    setType(txn.type);
+    setAmount(txn.amount);
+    setMerchant(txn.merchant);
+    setDate(txn.date);
+    setCategory(txn.category);
+    setPaymentMode(txn.payment_mode);
+    setNotes(txn.notes || '');
+    setIsLifePortfolio(txn.is_life_portfolio);
+    if (txn.life_category) setLifeCategory(txn.life_category);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
     try {
@@ -194,10 +209,10 @@ export default function Expenses() {
         {/* Manual Expense Form */}
         <div className="lg:col-span-2 glass-card p-5 animate-fade-in-up delay-75">
           <h3 className="text-base font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2 pb-3 border-b border-white/5">
-            <div className="p-1.5 bg-emerald-500/10 rounded-lg">
-              <Plus size={15} className="text-emerald-400" />
+            <div className="p-1.5 bg-indigo-50 rounded-lg">
+              <Plus size={15} className="text-indigo-600" />
             </div>
-            Manual Transaction Ledger
+            {editingTxnId ? "Edit Transaction" : "Manual Transaction Ledger"}
           </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -292,17 +307,17 @@ export default function Expenses() {
             </div>
 
             {/* Life Portfolio custom checkbox toggle */}
-            <div className="md:col-span-2 p-3 bg-blue-950/20 border border-emerald-500/10 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="md:col-span-2 p-3 bg-blue-950/20 border border-indigo-100 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   id="life-checkbox"
                   checked={isLifePortfolio}
                   onChange={(e) => setIsLifePortfolio(e.target.checked)}
-                  className="rounded bg-gray-900 border-gray-700 text-emerald-500 focus:ring-blue-500/50 w-4 h-4"
+                  className="rounded bg-gray-900 border-gray-700 text-indigo-600 focus:ring-blue-500/50 w-4 h-4"
                 />
                 <label htmlFor="life-checkbox" className="text-xs font-semibold text-[var(--text-primary)] cursor-pointer flex items-center space-x-1.5">
-                  <Sparkles size={14} className="text-emerald-400" />
+                  <Sparkles size={14} className="text-indigo-600" />
                   <span>Mark as Life Portfolio Capital Investment</span>
                 </label>
               </div>
@@ -330,7 +345,7 @@ export default function Expenses() {
                 className="btn-primary flex items-center gap-2"
               >
                 <Plus size={14} />
-                Log Transaction
+                {editingTxnId ? "Update Transaction" : "Log Transaction"}
               </button>
             </div>
           </form>
@@ -340,15 +355,15 @@ export default function Expenses() {
         <div className="glass-card p-5 flex flex-col justify-between animate-fade-in-up delay-150">
           <div>
             <h3 className="text-base font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-              <div className="p-1.5 bg-emerald-500/10 rounded-lg">
-                <Upload size={15} className="text-emerald-400" />
+              <div className="p-1.5 bg-indigo-50 rounded-lg">
+                <Upload size={15} className="text-indigo-600" />
               </div>
               Statement Parser
             </h3>
             <p className="text-[11px] text-[var(--text-muted)] mb-4">Ingest CSV/Excel/PDF exports from HDFC, SBI, ICICI, PhonePe, or standard bank accounts.</p>
             
             <form onSubmit={handleUpload} className="space-y-4">
-              <div className={`border-2 border-dashed ${!file ? 'border-emerald-500/40 animate-pulse-slow bg-emerald-500/[0.02]' : 'border-emerald-500/20 bg-emerald-500/10'} rounded-2xl p-8 text-center transition-all duration-300 hover:border-emerald-500/60 hover:bg-emerald-500/[0.05] flex flex-col items-center justify-center cursor-pointer relative glow-emerald`}>
+              <div className={`border-2 border-dashed ${!file ? 'border-emerald-500/40 animate-pulse-slow bg-emerald-500/[0.02]' : 'border-emerald-500/20 bg-indigo-50'} rounded-2xl p-8 text-center transition-all duration-300 hover:border-emerald-500/60 hover:bg-emerald-500/[0.05] flex flex-col items-center justify-center cursor-pointer relative glow-emerald`}>
                 <input
                   type="file"
                   id="file-input"
@@ -367,7 +382,7 @@ export default function Expenses() {
               <button 
                 type="button" 
                 onClick={() => setShowFormatModal(true)}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 text-[10px] text-[var(--text-muted)] hover:text-emerald-400 transition-colors uppercase font-semibold tracking-wider"
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 text-[10px] text-[var(--text-muted)] hover:text-indigo-600 transition-colors uppercase font-semibold tracking-wider"
               >
                 <Info size={12} />
                 View Supported Formats
@@ -396,7 +411,7 @@ export default function Expenses() {
             </form>
           </div>
           
-          <div className="text-[10px] text-[var(--text-muted)] border-t border-glassBorder/40 pt-3 mt-4 text-center">
+          <div className="text-[10px] text-[var(--text-muted)] border-t border-gray-200/40 pt-3 mt-4 text-center">
             Statement parser normalizes date structures & parses descriptions for Swiggy, Gym, Courses, etc.
           </div>
         </div>
@@ -460,7 +475,7 @@ export default function Expenses() {
         {/* Transaction History Table */}
         <div className="overflow-x-auto pr-1">
           <table className="w-full text-left text-sm text-[var(--text-primary)]">
-            <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] bg-emerald-500/[0.03] border-b border-glassBorder">
+            <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] bg-emerald-500/[0.03] border-b border-gray-200">
               <tr>
                 <th className="py-3 px-4 rounded-l-lg font-semibold">Date</th>
                 <th className="py-3 px-4 font-semibold">Merchant / Source</th>
@@ -472,7 +487,7 @@ export default function Expenses() {
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
               {filteredTransactions.map((t) => (
-                <tr key={t.id} className="hover:bg-emerald-500/[0.04] transition-all duration-200 group border-b border-glassBorder/50 last:border-0">
+                <tr key={t.id} className="hover:bg-emerald-500/[0.04] transition-all duration-200 group border-b border-gray-200/50 last:border-0">
                   <td className="py-3.5 px-4 font-mono text-xs">{t.date}</td>
                   <td className="py-3.5 px-4">
                     <div>
@@ -491,23 +506,34 @@ export default function Expenses() {
                     </div>
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className="text-[10px] px-2 py-0.5 bg-black/5 dark:bg-white/5 rounded-full border border-glassBorder uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+                    <span className="text-[10px] px-2 py-0.5 bg-gray-100 rounded-full border border-gray-200 uppercase tracking-wider text-[var(--text-muted)] font-semibold">
                       {t.payment_mode}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right">
-                    <span className={`font-bold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--text-primary)]'}`}>
+                    <span className={`font-bold ${t.type === 'income' ? 'text-indigo-600 dark:text-indigo-600' : 'text-[var(--text-primary)]'}`}>
                       {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-center">
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      className="text-[var(--text-muted)] hover:text-red-400 p-1.5 rounded-lg hover:bg-white/5 transition-all opacity-0 group-hover:opacity-100"
-                      title="Delete transaction"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(t)}
+                        className="text-[var(--text-muted)] hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition-all mr-1"
+                        title="Edit transaction"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(t.id)}
+                        className="text-[var(--text-muted)] hover:text-red-400 p-1.5 rounded-lg hover:bg-rose-50 transition-all"
+                        title="Delete transaction"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -526,10 +552,10 @@ export default function Expenses() {
       {/* Supported Formats Modal */}
       {showFormatModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-[var(--bg-surface)] border border-glassBorder rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-scale-in">
-            <div className="sticky top-0 bg-[var(--bg-surface)] border-b border-glassBorder px-6 py-4 flex items-center justify-between z-10">
+          <div className="bg-[var(--bg-surface)] border border-gray-200 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-scale-in">
+            <div className="sticky top-0 bg-[var(--bg-surface)] border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
               <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <FileSpreadsheet className="text-emerald-500" />
+                <FileSpreadsheet className="text-indigo-600" />
                 Supported Statement Formats
               </h3>
               <button 
@@ -548,9 +574,9 @@ export default function Expenses() {
                   CSV / Excel Format
                 </h4>
                 <p className="text-xs text-[var(--text-muted)] mb-3">Ensure your spreadsheet contains headers similar to Date, Merchant/Details, Amount, and Type (Optional).</p>
-                <div className="overflow-x-auto border border-glassBorder rounded-lg">
+                <div className="overflow-x-auto border border-gray-200 rounded-lg">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-white/5 border-b border-glassBorder text-[var(--text-muted)] uppercase tracking-wider">
+                    <thead className="bg-gray-100 border-b border-gray-200 text-[var(--text-muted)] uppercase tracking-wider">
                       <tr>
                         <th className="p-3">Date</th>
                         <th className="p-3">Transaction Details</th>
@@ -583,19 +609,19 @@ export default function Expenses() {
                   PDF Format (PhonePe / Standard)
                 </h4>
                 <p className="text-xs text-[var(--text-muted)] mb-3">PDFs should contain clear text blocks or tables. Scanned images without OCR are not supported.</p>
-                <div className="border border-glassBorder rounded-lg p-4 bg-black/[0.02] dark:bg-white/[0.02] font-mono text-xs text-[var(--text-primary)] leading-relaxed">
-                  <div className="border-b border-glassBorder pb-2 mb-2 text-[var(--text-muted)]">
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 dark:bg-gray-50 font-mono text-xs text-[var(--text-primary)] leading-relaxed">
+                  <div className="border-b border-gray-200 pb-2 mb-2 text-[var(--text-muted)]">
                     Transaction Statement<br/>
                     28 May, 2026 - 27 Jun, 2026
                   </div>
                   <div>
-                    <span className="text-emerald-400">Jun 24, 2026</span><br/>
+                    <span className="text-indigo-600">Jun 24, 2026</span><br/>
                     07:53 pm<br/>
                     Paid to YASH BHARATBHAI LIMBANI <span className="text-amber-400">DEBIT</span> ₹200<br/>
                     <span className="text-[10px] text-gray-500">Transaction ID T2606241953219174296744</span>
                   </div>
                   <div className="mt-3">
-                    <span className="text-emerald-400">Jun 24, 2026</span><br/>
+                    <span className="text-indigo-600">Jun 24, 2026</span><br/>
                     07:26 pm<br/>
                     Received from MAA <span className="text-blue-400">CREDIT</span> ₹500<br/>
                     <span className="text-[10px] text-gray-500">Transaction ID T2606241926436169300551</span>

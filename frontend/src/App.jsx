@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from './context/AppContext';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Expenses from './components/Expenses';
 import Portfolio from './components/Portfolio';
 import AIAdvisor from './components/AIAdvisor';
+import History from './components/History';
 import News from './components/News';
 import Login from './components/Login';
+import Landing from './components/Landing';
+import Profile from './components/Profile';
 
 export default function App() {
   const { token, activeTab, user } = useApp();
+  const [showLogin, setShowLogin] = useState(false);
 
   // Route components based on tab state
   const renderContent = () => {
@@ -22,6 +26,10 @@ export default function App() {
         return <Portfolio />;
       case 'advisor':
         return <AIAdvisor />;
+      case 'history':
+        return <History />;
+      case 'profile':
+        return <Profile />;
       case 'news':
         return <News />;
       default:
@@ -31,7 +39,9 @@ export default function App() {
 
   // Auth Guard
   if (!token) {
-    return <Login />;
+    return showLogin 
+      ? <Login onBack={() => setShowLogin(false)} /> 
+      : <Landing onLoginClick={() => setShowLogin(true)} />;
   }
 
   return (
