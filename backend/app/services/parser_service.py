@@ -174,13 +174,13 @@ def _process_dataframe(df: pd.DataFrame) -> List[Dict[str, Any]]:
     
     # Standard list of categories for automatic heuristic mapping
     categories = {
-        "food": ["restaurant", "swiggy", "zomato", "cafe", "grocery", "diner", "supermarket", "blinkit", "instamart"],
+        "food": ["restaurant", "swiggy", "zomato", "cafe", "grocery", "diner", "supermarket", "blinkit", "instamart", "vada", "paan", "soda", "idli"],
         "rent": ["rent", "landlord", "pg", "society"],
         "learning": ["book", "course", "udemy", "coursera", "conference", "tuition", "certificat", "skills"],
         "health": ["gym", "protein", "pharmacy", "medical", "doctor", "hospital", "supplement", "fit", "sports"],
-        "experiences": ["travel", "trip", "hotel", "flight", "uber", "ola", "irctc", "movie", "ticket", "concert", "volunteering"],
-        "bills": ["electricity", "water", "recharge", "jio", "airtel", "broadband", "gas", "insurance"],
-        "shopping": ["amazon", "flipkart", "clothing", "myntra", "mall"],
+        "experiences": ["travel", "trip", "hotel", "flight", "uber", "ola", "irctc", "movie", "ticket", "concert", "volunteering", "railway", "train"],
+        "bills": ["electricity", "water", "recharge", "jio", "airtel", "broadband", "gas", "insurance", "recharged"],
+        "shopping": ["amazon", "flipkart", "clothing", "myntra", "mall", "meesho"],
         "investment": ["mutual fund", "zerodha", "groww", "stock", "crypto", "sip", "gold"]
     }
     
@@ -267,12 +267,12 @@ def parse_pdf_statement(file_content: bytes) -> List[Dict[str, Any]]:
     parsed_transactions = []
     
     categories = {
-        "food": ["restaurant", "swiggy", "zomato", "cafe", "grocery", "diner", "supermarket", "blinkit", "instamart", "vada", "paan"],
+        "food": ["restaurant", "swiggy", "zomato", "cafe", "grocery", "diner", "supermarket", "blinkit", "instamart", "vada", "paan", "soda", "idli"],
         "rent": ["rent", "landlord", "pg", "society"],
         "learning": ["book", "course", "udemy", "coursera", "conference", "tuition", "certificat", "skills"],
         "health": ["gym", "protein", "pharmacy", "medical", "doctor", "hospital", "supplement", "fit", "sports"],
-        "experiences": ["travel", "trip", "hotel", "flight", "uber", "ola", "irctc", "movie", "ticket", "concert", "volunteering"],
-        "bills": ["electricity", "water", "recharge", "jio", "airtel", "broadband", "gas", "insurance"],
+        "experiences": ["travel", "trip", "hotel", "flight", "uber", "ola", "irctc", "movie", "ticket", "concert", "volunteering", "railway", "train"],
+        "bills": ["electricity", "water", "recharge", "jio", "airtel", "broadband", "gas", "insurance", "recharged"],
         "shopping": ["amazon", "flipkart", "clothing", "myntra", "mall", "meesho"],
         "investment": ["mutual fund", "zerodha", "groww", "stock", "crypto", "sip", "gold"]
     }
@@ -283,32 +283,19 @@ def parse_pdf_statement(file_content: bytes) -> List[Dict[str, Any]]:
             for page in pdf.pages:
                 text += page.extract_text() + "\n"
         
-        # Simple regex approach for PhonePe style text block extraction
-        # Example: 
-        # Jun 24, 2026
-        # 07:53 pm
-        # Paid to YASH BHARATBHAI LIMBANI DEBIT ₹200
+        # Robust regex approach for PhonePe style text block extraction
+        pattern = r'([A-Z][a-z]{2}\s\d{1,2},\s\d{4})[\s\S]{0,50}?(Paid to|Received from|Mobile recharged)\s+(.*?)\s+(DEBIT|CREDIT)?\s*₹([\d,.]+)'
         
-        lines = text.split('\n')
-        
-        current_date = None
-        for i, line in enumerate(lines):
-            line = line.strip()
+        for match in re.finditer(pattern, text, re.IGNORECASE):
+            date_str = match.group(1).strip()
+            action = match.group(2).strip()
+            merchant = match.group(3).strip()
+            type_indicator = match.group(4)
+            amount_str = match.group(5)
             
-            # Check for Date: e.g., Jun 24, 2026
-            date_match = re.match(r'^([A-Z][a-z]{2}\s\d{1,2},\s\d{4})$', line)
-            if date_match:
-                current_date = parse_date(date_match.group(1))
-                continue
+            current_date = parse_date(date_str)
             
-            # Check for Transaction line: "Paid to XYZ DEBIT ₹200" or "Received from XYZ CREDIT ₹500"
-            txn_match = re.search(r'^(Paid to|Received from|Mobile recharged)\s+(.*?)\s+(DEBIT|CREDIT)?\s*₹([\d,.]+)', line, re.IGNORECASE)
-            
-            if txn_match and current_date:
-                action = txn_match.group(1).strip()
-                merchant = txn_match.group(2).strip()
-                type_indicator = txn_match.group(3)
-                amount_str = txn_match.group(4)
+            if current_date:
                 
                 amount = clean_amount(amount_str)
                 

@@ -85,7 +85,7 @@ export default function Login() {
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 isLogin 
                   ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white shadow-md' 
-                  : 'text-[var(--text-muted)] hover:text-gray-300'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Sign In
@@ -95,7 +95,7 @@ export default function Login() {
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 !isLogin 
                   ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white shadow-md' 
-                  : 'text-[var(--text-muted)] hover:text-gray-300'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Sign Up
@@ -198,7 +198,7 @@ export default function Login() {
           {/* Demo Button */}
           <button
             onClick={handleQuickDemo}
-            className="w-full py-2.5 bg-white/[0.03] hover:bg-white/[0.06] text-gray-300 hover:text-white border border-glassBorder hover:border-white/10 rounded-xl text-xs font-semibold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group"
+            className="w-full py-2.5 bg-white/[0.03] hover:bg-white/[0.06] text-[var(--text-primary)] hover:text-white border border-glassBorder hover:border-white/10 rounded-xl text-xs font-semibold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 group"
           >
             <Zap size={14} className="text-amber-400 group-hover:animate-pulse" />
             Try Quick Demo (One-Click)

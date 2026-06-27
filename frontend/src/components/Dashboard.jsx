@@ -403,12 +403,12 @@ export default function Dashboard() {
                     {t.type === 'income' ? '+' : '−'}
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-200 text-[13px] truncate max-w-[120px]">{t.merchant || 'Merchant'}</h5>
+                    <h5 className="font-semibold text-[var(--text-primary)] text-[13px] truncate max-w-[120px]">{t.merchant || 'Merchant'}</h5>
                     <span className="text-[10px] text-[var(--text-muted)]">{t.date} • {t.category}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`font-bold text-sm ${t.type === 'income' ? 'text-emerald-400' : 'text-gray-200'}`}>
+                  <p className={`font-bold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--text-primary)]'}`}>
                     {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                   </p>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/5 text-[var(--text-muted)] border border-glassBorder uppercase tracking-wider">{t.payment_mode}</span>

@@ -38,7 +38,7 @@ export default function Expenses() {
 
   // Filtering State
   const [filterCategory, setFilterCategory] = useState('All');
-  const [filterType, setFilterType] = useState('All');
+  const [filterType, setFilterType] = useState('expense');
   const [filterLife, setFilterLife] = useState('All');
 
   // Form submission
@@ -301,7 +301,7 @@ export default function Expenses() {
                   onChange={(e) => setIsLifePortfolio(e.target.checked)}
                   className="rounded bg-gray-900 border-gray-700 text-emerald-500 focus:ring-blue-500/50 w-4 h-4"
                 />
-                <label htmlFor="life-checkbox" className="text-xs font-semibold text-gray-200 cursor-pointer flex items-center space-x-1.5">
+                <label htmlFor="life-checkbox" className="text-xs font-semibold text-[var(--text-primary)] cursor-pointer flex items-center space-x-1.5">
                   <Sparkles size={14} className="text-emerald-400" />
                   <span>Mark as Life Portfolio Capital Investment</span>
                 </label>
@@ -348,7 +348,7 @@ export default function Expenses() {
             <p className="text-[11px] text-[var(--text-muted)] mb-4">Ingest CSV/Excel/PDF exports from HDFC, SBI, ICICI, PhonePe, or standard bank accounts.</p>
             
             <form onSubmit={handleUpload} className="space-y-4">
-              <div className="border border-dashed border-white/10 hover:border-emerald-500/30 rounded-xl p-6 text-center transition-all duration-300 bg-white/[0.01] hover:bg-emerald-500/[0.03] flex flex-col items-center justify-center cursor-pointer relative">
+              <div className={`border-2 border-dashed ${!file ? 'border-emerald-500/40 animate-pulse-slow bg-emerald-500/[0.02]' : 'border-emerald-500/20 bg-emerald-500/10'} rounded-2xl p-8 text-center transition-all duration-300 hover:border-emerald-500/60 hover:bg-emerald-500/[0.05] flex flex-col items-center justify-center cursor-pointer relative glow-emerald`}>
                 <input
                   type="file"
                   id="file-input"
@@ -358,7 +358,7 @@ export default function Expenses() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 <FileSpreadsheet className="text-[var(--text-muted)] mb-2" size={32} />
-                <span className="text-xs font-semibold text-gray-300">
+                <span className="text-xs font-semibold text-[var(--text-primary)]">
                   {file ? file.name : "Select statement (CSV, Excel, PDF)"}
                 </span>
                 <span className="text-[10px] text-[var(--text-muted)] mt-1">Supports drag & drop</span>
@@ -459,8 +459,8 @@ export default function Expenses() {
 
         {/* Transaction History Table */}
         <div className="overflow-x-auto pr-1">
-          <table className="w-full text-left text-sm text-gray-300">
-            <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] bg-white/[0.02] border-b border-white/5">
+          <table className="w-full text-left text-sm text-[var(--text-primary)]">
+            <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] bg-emerald-500/[0.03] border-b border-glassBorder">
               <tr>
                 <th className="py-3 px-4 rounded-l-lg font-semibold">Date</th>
                 <th className="py-3 px-4 font-semibold">Merchant / Source</th>
@@ -472,11 +472,11 @@ export default function Expenses() {
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
               {filteredTransactions.map((t) => (
-                <tr key={t.id} className="hover:bg-white/[0.03] transition-all duration-200 group">
+                <tr key={t.id} className="hover:bg-emerald-500/[0.04] transition-all duration-200 group border-b border-glassBorder/50 last:border-0">
                   <td className="py-3.5 px-4 font-mono text-xs">{t.date}</td>
                   <td className="py-3.5 px-4">
                     <div>
-                      <span className="font-semibold text-gray-200">{t.merchant}</span>
+                      <span className="font-semibold text-[var(--text-primary)]">{t.merchant}</span>
                       {t.notes && <p className="text-[10px] text-[var(--text-muted)] mt-0.5 truncate max-w-[200px]">{t.notes}</p>}
                     </div>
                   </td>
@@ -484,19 +484,19 @@ export default function Expenses() {
                     <div className="flex items-center space-x-1.5">
                       <span className="text-xs">{t.category}</span>
                       {t.is_life_portfolio && (
-                        <span className="badge badge-green text-[8px]">
+                        <span className="badge badge-emerald text-[8px]">
                           Life Asset
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className="text-[10px] px-2 py-0.5 bg-white/5 rounded-full border border-white/5 uppercase tracking-wider text-[var(--text-muted)]">
+                    <span className="text-[10px] px-2 py-0.5 bg-black/5 dark:bg-white/5 rounded-full border border-glassBorder uppercase tracking-wider text-[var(--text-muted)] font-semibold">
                       {t.payment_mode}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right">
-                    <span className={`font-bold ${t.type === 'income' ? 'text-emerald-400' : 'text-gray-200'}`}>
+                    <span className={`font-bold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--text-primary)]'}`}>
                       {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                     </span>
                   </td>
@@ -558,7 +558,7 @@ export default function Expenses() {
                         <th className="p-3">Type</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-glassBorder text-gray-300">
+                    <tbody className="divide-y divide-glassBorder text-[var(--text-primary)]">
                       <tr>
                         <td className="p-3">2026-06-24</td>
                         <td className="p-3">Paid to Amazon</td>
@@ -583,7 +583,7 @@ export default function Expenses() {
                   PDF Format (PhonePe / Standard)
                 </h4>
                 <p className="text-xs text-[var(--text-muted)] mb-3">PDFs should contain clear text blocks or tables. Scanned images without OCR are not supported.</p>
-                <div className="border border-glassBorder rounded-lg p-4 bg-white/[0.02] font-mono text-xs text-gray-300 leading-relaxed">
+                <div className="border border-glassBorder rounded-lg p-4 bg-black/[0.02] dark:bg-white/[0.02] font-mono text-xs text-[var(--text-primary)] leading-relaxed">
                   <div className="border-b border-glassBorder pb-2 mb-2 text-[var(--text-muted)]">
                     Transaction Statement<br/>
                     28 May, 2026 - 27 Jun, 2026

@@ -54,12 +54,12 @@ export default function AIAdvisor() {
         return <h2 key={idx} className="text-lg font-bold text-gray-100 mt-5 mb-3 flex items-center gap-2 border-b border-white/[0.03] pb-2">{trimmed.replace('## ', '')}</h2>;
       }
       if (trimmed.startsWith('### ')) {
-        return <h3 key={idx} className="text-base font-bold text-gray-200 mt-4 mb-2">{trimmed.replace('### ', '')}</h3>;
+        return <h3 key={idx} className="text-base font-bold text-[var(--text-primary)] mt-4 mb-2">{trimmed.replace('### ', '')}</h3>;
       }
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
         const itemText = trimmed.replace(/^[-*]\s+/, '');
         return (
-          <div key={idx} className="flex items-start gap-2.5 text-sm text-gray-300 mb-2 pl-4">
+          <div key={idx} className="flex items-start gap-2.5 text-sm text-[var(--text-primary)] mb-2 pl-4">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0"></span>
             <span className="flex-1">{parseBoldText(itemText)}</span>
           </div>
@@ -69,7 +69,7 @@ export default function AIAdvisor() {
         const numMatch = trimmed.match(/^(\d+)\.\s(.*)/);
         if (numMatch) {
           return (
-            <div key={idx} className="flex items-start gap-2.5 text-sm text-gray-300 mb-2 pl-4">
+            <div key={idx} className="flex items-start gap-2.5 text-sm text-[var(--text-primary)] mb-2 pl-4">
               <span className="w-5 h-5 rounded-md bg-purple-500/15 text-purple-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{numMatch[1]}</span>
               <span className="flex-1">{parseBoldText(numMatch[2])}</span>
             </div>
@@ -81,7 +81,7 @@ export default function AIAdvisor() {
       }
       if (trimmed.startsWith('ℹ️') || trimmed.startsWith('⚠️') || trimmed.startsWith('✅') || trimmed.startsWith('🚨')) {
         return (
-          <div key={idx} className="p-3 bg-white/[0.03] border border-white/5 rounded-xl text-sm text-gray-300 leading-relaxed mb-3 flex gap-2">
+          <div key={idx} className="p-3 bg-white/[0.03] border border-white/5 rounded-xl text-sm text-[var(--text-primary)] leading-relaxed mb-3 flex gap-2">
             <span>{trimmed.slice(0, 2)}</span>
             <span className="flex-1">{parseBoldText(trimmed.slice(2))}</span>
           </div>
@@ -90,7 +90,7 @@ export default function AIAdvisor() {
       if (trimmed === '') {
         return <div key={idx} className="h-2"></div>;
       }
-      return <p key={idx} className="text-sm text-gray-300 leading-relaxed mb-2.5">{parseBoldText(line)}</p>;
+      return <p key={idx} className="text-sm text-[var(--text-primary)] leading-relaxed mb-2.5">{parseBoldText(line)}</p>;
     });
   };
 
@@ -236,7 +236,7 @@ export default function AIAdvisor() {
                   <div className={`p-3 rounded-2xl max-w-[80%] leading-relaxed ${
                     msg.role === 'user' 
                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white rounded-br-md shadow-md shadow-emerald-600/15' 
-                      : 'bg-white/[0.04] border border-white/5 text-gray-300 rounded-bl-md'
+                      : 'bg-white/[0.04] border border-white/5 text-[var(--text-primary)] rounded-bl-md'
                   }`}>
                     <p>{msg.content}</p>
                   </div>
@@ -294,7 +294,7 @@ export default function AIAdvisor() {
                 <button
                   key={q.text}
                   onClick={() => setQuestion(q.text)}
-                  className="text-[10px] bg-white/[0.03] hover:bg-white/[0.06] text-gray-400 hover:text-gray-200 py-2 px-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-all duration-200 text-left flex items-center gap-1.5"
+                  className="text-[10px] bg-white/[0.03] hover:bg-white/[0.06] text-[var(--text-muted)] hover:text-[var(--text-primary)] py-2 px-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-all duration-200 text-left flex items-center gap-1.5"
                 >
                   <span>{q.icon}</span>
                   {q.text}

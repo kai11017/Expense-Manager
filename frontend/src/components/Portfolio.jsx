@@ -155,7 +155,7 @@ export default function Portfolio() {
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
               activeTab === 'financial'
                 ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-gray-400 hover:text-gray-200'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
             📈 Financial Assets
@@ -168,7 +168,7 @@ export default function Portfolio() {
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider flex items-center space-x-1.5 ${
               activeTab === 'life'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-600/10'
-                : 'text-gray-400 hover:text-gray-200'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
             <Sparkles size={12} />
@@ -349,7 +349,7 @@ export default function Portfolio() {
           <div className="glass-card p-5">
             <h3 className="text-md font-bold text-white mb-4">Financial Ledger Holdings</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-gray-300">
+              <table className="w-full text-left text-xs text-[var(--text-primary)]">
                 <thead className="bg-white/5 border-b border-glassBorder text-gray-400 uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-4 rounded-l-lg">Asset Name</th>
@@ -366,7 +366,7 @@ export default function Portfolio() {
                 <tbody className="divide-y divide-glassBorder/30">
                   {financialAssets.map((asset) => (
                     <tr key={asset.id} className="hover:bg-white/5 transition-all">
-                      <td className="py-3.5 px-4 font-semibold text-gray-200">{asset.name}</td>
+                      <td className="py-3.5 px-4 font-semibold text-[var(--text-primary)]">{asset.name}</td>
                       <td className="py-3.5 px-4">
                         <span className="text-[10px] px-2 py-0.5 bg-white/5 rounded-full border border-white/5 uppercase tracking-wider text-gray-400">
                           {asset.type}
@@ -414,7 +414,7 @@ export default function Portfolio() {
               <Sparkles className="text-purple-400 flex-shrink-0 animate-pulse" size={20} />
               <span>Capital is More than Money</span>
             </h3>
-            <p className="text-sm text-gray-300 mt-2 leading-relaxed">
+            <p className="text-sm text-[var(--text-primary)] mt-2 leading-relaxed">
               Traditional accounting tags expenses like fitness, courses, books, and trips as "lost capital". 
               **FinPilot rewrites this logic.** When you spend money on your physical wellness, knowledge, and mental resilience, you are acquiring structural assets that yield compounding returns over your lifetime. We track these as capital allocations in your **Life Portfolio**.
             </p>
@@ -588,7 +588,7 @@ export default function Portfolio() {
           <div className="glass-card p-5">
             <h3 className="text-md font-bold text-white mb-4">Life Capital Assets Registry</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-gray-300">
+              <table className="w-full text-left text-xs text-[var(--text-primary)]">
                 <thead className="bg-white/5 border-b border-glassBorder text-gray-400 uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-4 rounded-l-lg">Capital Asset</th>
@@ -601,7 +601,7 @@ export default function Portfolio() {
                 <tbody className="divide-y divide-glassBorder/30">
                   {lifeAssets.map((asset) => (
                     <tr key={asset.id} className="hover:bg-white/5 transition-all">
-                      <td className="py-3.5 px-4 font-semibold text-gray-200">{asset.name}</td>
+                      <td className="py-3.5 px-4 font-semibold text-[var(--text-primary)]">{asset.name}</td>
                       <td className="py-3.5 px-4">
                         <span className="text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider" 
                               style={{ 

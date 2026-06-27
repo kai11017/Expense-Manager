@@ -20,46 +20,38 @@ export default function Sidebar() {
   const { activeTab, setActiveTab, user, logout, isSidebarCollapsed, setIsSidebarCollapsed, theme, setTheme } = useApp();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'blue' },
-    { id: 'transactions', label: 'Expenses', icon: Receipt, color: 'amber' },
-    { id: 'portfolio', label: 'Life & Asset Portfolio', icon: Wallet, color: 'emerald' },
-    { id: 'advisor', label: 'AI Financial Advisor', icon: BrainCircuit, color: 'purple' },
-    { id: 'news', label: 'Personalized News', icon: Newspaper, color: 'rose' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'transactions', label: 'Expenses', icon: Receipt },
+    { id: 'portfolio', label: 'Life & Asset Portfolio', icon: Wallet },
+    { id: 'advisor', label: 'AI Financial Advisor', icon: BrainCircuit },
+    { id: 'news', label: 'Personalized News', icon: Newspaper },
   ];
-
-  const colorMap = {
-    blue: { bg: 'from-emerald-500 to-emerald-600', shadow: 'shadow-emerald-500/20', dot: 'bg-emerald-400' },
-    amber: { bg: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', dot: 'bg-amber-400' },
-    emerald: { bg: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', dot: 'bg-emerald-400' },
-    purple: { bg: 'from-purple-500 to-violet-600', shadow: 'shadow-purple-500/20', dot: 'bg-purple-400' },
-    rose: { bg: 'from-rose-500 to-pink-600', shadow: 'shadow-rose-500/20', dot: 'bg-rose-400' },
-  };
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
     <aside 
-      className={`glass-card h-[calc(100vh-2rem)] sticky top-4 left-4 flex flex-col justify-between p-4 shadow-xl transition-all duration-300 z-50 ${
-        isSidebarCollapsed ? 'w-[80px]' : 'w-64'
+      className={`glass-card h-[calc(100vh-2rem)] sticky top-4 left-4 flex flex-col justify-between p-5 shadow-2xl transition-all duration-500 z-50 ${
+        isSidebarCollapsed ? 'w-[88px]' : 'w-72'
       }`}
     >
       <div>
         {/* Logo/Brand Header & Toggle */}
-        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} mb-6 border-b border-glassBorder pb-4`}>
+        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} mb-8 border-b border-glassBorder pb-6`}>
           {!isSidebarCollapsed && (
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl text-white shadow-lg shadow-emerald-500/25">
-                  <Cpu size={18} />
+                <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl text-white shadow-lg shadow-emerald-500/30">
+                  <Cpu size={20} />
                 </div>
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse border-2 border-[var(--bg-surface)]"></span>
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse border-2 border-[var(--bg-surface)]"></span>
               </div>
               <div>
-                <h1 className="text-base font-bold tracking-wide text-gradient-brand">FinPilot</h1>
-                <div className="flex items-center gap-1.5">
-                  <Zap size={10} className="text-amber-400" />
-                  <span className="text-[9px] uppercase tracking-[0.2em] text-[var(--text-muted)] font-semibold">OS</span>
+                <h1 className="text-xl font-extrabold tracking-tight text-gradient-brand">FinPilot</h1>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Zap size={10} className="text-emerald-500" />
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)] font-bold">OS</span>
                 </div>
               </div>
             </div>
@@ -67,42 +59,41 @@ export default function Sidebar() {
           
           <button 
             onClick={toggleSidebar} 
-            className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+            className="p-2 bg-emerald-500/5 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-xl transition-all active:scale-95"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            <Menu size={18} />
+            <Menu size={20} />
           </button>
         </div>
 
         {/* Navigation Items */}
-        <nav className="space-y-1.5">
+        <nav className="space-y-2">
           {menuItems.map((item, idx) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
-            const colors = colorMap[item.color];
             
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`group w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'} py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                className={`group w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-4'} py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   isActive
-                    ? `bg-gradient-to-r ${colors.bg} text-white shadow-md ${colors.shadow}`
-                    : 'text-[var(--text-muted)] hover:bg-black/5 dark:hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
+                    : 'text-[var(--text-muted)] hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
                 }`}
                 style={{ animationDelay: `${idx * 50}ms` }}
                 title={isSidebarCollapsed ? item.label : undefined}
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3.5">
                   {!isActive && !isSidebarCollapsed && (
-                    <span className={`w-1.5 h-1.5 rounded-full ${colors.dot} opacity-50`}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-colors"></span>
                   )}
-                  <Icon size={17} className={isActive ? 'text-white' : 'text-[var(--text-muted)] group-hover:text-gray-700 dark:group-hover:text-gray-300'} />
+                  <Icon size={18} className={isActive ? 'text-white' : 'text-[var(--text-muted)] group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors'} />
                   {!isSidebarCollapsed && (
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate tracking-wide">{item.label}</span>
                   )}
                 </div>
-                {isActive && !isSidebarCollapsed && <ChevronRight size={14} className="text-white/60" />}
+                {isActive && !isSidebarCollapsed && <ChevronRight size={16} className="text-white/80" />}
               </button>
             );
           })}
