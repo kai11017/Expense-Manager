@@ -1,14 +1,60 @@
 from typing import List, Dict, Any
 import random
+import json
+import os
 from datetime import datetime, timedelta
+import google.generativeai as genai
 
 def get_personalized_news(assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Generates customized, premium financial and life news based on the user's specific assets.
+    Generates customized, premium financial and life news based on the user's specific assets using Gemini AI.
+    Falls back to templates if AI generation fails.
     """
-    news_items = []
     today = datetime.today()
+    news_items = []
     
+    # Try AI generation first
+    try:
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-3.5-flash")
+        
+        asset_names = [a.get("name", "") for a in assets if a.get("name")]
+        asset_str = ", ".join(asset_names) if asset_names else "General Market, Indian Equities"
+        
+        prompt = f"""
+        You are a top financial news aggregator. The user has the following assets in their portfolio: {asset_str}.
+        Generate 6 highly relevant, realistic, and up-to-date news headlines and short summaries related to these specific assets or their sectors.
+        Output the result STRICTLY as a JSON array of objects with the following keys:
+        - "title": (string)
+        - "summary": (string)
+        - "source": (string, e.g., 'Economic Times', 'Reuters', 'Bloomberg')
+        - "sentiment": (string, 'positive', 'negative', or 'neutral')
+        - "relevant_asset": (string, the name of the matching asset from the user's list)
+        - "published_at": (string, formatted as 'YYYY-MM-DD HH:MM', use a recent date within the last 48 hours)
+        
+        Do not include any other text, markdown formatting (like ```json), or explanations. ONLY return the JSON array.
+        """
+        
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Clean up any markdown blocks if the model accidentally includes them
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+            
+        ai_news = json.loads(response_text.strip())
+        
+        if isinstance(ai_news, list) and len(ai_news) > 0:
+            return ai_news
+    except Exception as e:
+        print(f"Failed to generate AI news: {e}")
+        # Fall back to template-based news below
+
     # Base news templates
     templates = {
         "Stock": [

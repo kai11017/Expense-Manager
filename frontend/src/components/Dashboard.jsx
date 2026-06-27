@@ -13,7 +13,9 @@ import {
   Target,
   Zap,
   ChevronRight,
-  Receipt
+  Receipt,
+  Settings,
+  X
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -34,7 +36,8 @@ import {
 } from 'recharts';
 
 export default function Dashboard() {
-  const { dashboardData, transactions, portfolio, loading, setActiveTab } = useApp();
+  const { dashboardData, transactions, portfolio, budgets, loading, setActiveTab } = useApp();
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = React.useState(false);
 
   if (loading && !dashboardData) {
     return (
@@ -94,11 +97,12 @@ export default function Dashboard() {
     const getLast6Months = () => {
       const months = [];
       const date = new Date();
+      const toLocalYYYYMM = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       for (let i = 5; i >= 0; i--) {
         const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
         months.push({
           label: d.toLocaleString('default', { month: 'short' }),
-          key: d.toISOString().slice(0, 7) // "YYYY-MM"
+          key: toLocalYYYYMM(d)
         });
       }
       return months;
@@ -119,12 +123,30 @@ export default function Dashboard() {
   }
 
   // Dynamic category calculations
-  const currentMonthStr = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const currentMonthStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`; // "YYYY-MM" in local time
   const currentMonthExpenses = (transactions || []).filter(t => {
     return t.type === 'expense' && t.date && t.date.startsWith(currentMonthStr);
   });
   
   const totalExpenseAmount = currentMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+  
+  // Calculate Last Month's Spending for comparison
+  const lastMonthStr = (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const lastMonthSpending = (transactions || [])
+    .filter(t => t.type === 'expense' && t.date && t.date.startsWith(lastMonthStr))
+    .reduce((sum, t) => sum + t.amount, 0);
+    
+  let spendingChange = 0;
+  if (lastMonthSpending > 0) {
+    spendingChange = ((monthly_spending - lastMonthSpending) / lastMonthSpending) * 100;
+  }
+  
+  const currentTotalBudget = budget_left + monthly_spending;
+  const budgetPct = currentTotalBudget > 0 ? (budget_left / currentTotalBudget) * 100 : 0;
   
   let categoryChartData = [];
   if (totalExpenseAmount > 0) {
@@ -184,14 +206,12 @@ export default function Dashboard() {
     : 0;
 
   // Dynamic budget alerts
-  const defaultBudgets = {
-    'Food': 10000,
-    'Shopping': 5000,
-    'Transport': 3000,
-    'Bills': 15000,
-    'Health': 5000,
-    'Others': 10000
-  };
+  const currentBudgetsMap = {};
+  if (budgets && budgets.length > 0) {
+    budgets.forEach(b => {
+      currentBudgetsMap[b.category] = b.amount;
+    });
+  }
 
   const getBudgetAlerts = () => {
     if (isNewUser) return [];
@@ -202,12 +222,17 @@ export default function Dashboard() {
     });
 
     const alerts = [];
-    Object.keys(defaultBudgets).forEach(category => {
+    // Only show alerts for categories with a set budget, or fallback to tracking expenses if no budget is set
+    const categoriesToTrack = Object.keys(currentBudgetsMap).length > 0 
+      ? Object.keys(currentBudgetsMap)
+      : [];
+
+    categoriesToTrack.forEach(category => {
       const spent = categorySpendingMap[category] || 0;
-      const limit = defaultBudgets[category];
-      const pct = limit > 0 ? (spent / limit) * 100 : 0;
-      
-      if (spent > 0) {
+      const limit = currentBudgetsMap[category];
+      if (limit > 0) {
+        const pct = (spent / limit) * 100;
+        
         let status = 'on track';
         let colorClass = 'bg-emerald-500';
         if (pct >= 100) {
@@ -244,7 +269,7 @@ export default function Dashboard() {
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Total Net Worth</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(net_worth)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
-            <TrendingUp size={12} /> {isNewUser ? '0%' : '8.6%'} vs last month
+            <TrendingUp size={12} /> Financial & Life Capital
           </p>
         </div>
 
@@ -252,8 +277,9 @@ export default function Dashboard() {
         <div className="glass-card p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Monthly Spending</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(monthly_spending)}</h3>
-          <p className="text-xs font-medium text-rose-500 mt-2 flex items-center gap-1">
-            <TrendingDown size={12} /> {isNewUser ? '0%' : '12.4%'} vs last month
+          <p className={`text-xs font-medium mt-2 flex items-center gap-1 ${spendingChange > 0 ? 'text-rose-500' : 'text-emerald-600'}`}>
+            {spendingChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} 
+            {isNewUser ? '0%' : `${Math.abs(spendingChange).toFixed(1)}%`} vs last month
           </p>
         </div>
 
@@ -262,7 +288,7 @@ export default function Dashboard() {
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Available Budget</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(budget_left)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2">
-            {isNewUser ? '0%' : '40%'} of {formatCurrency(isNewUser ? 0 : 50000)}
+            {isNewUser ? '0%' : `${budgetPct.toFixed(0)}%`} remaining this month
           </p>
         </div>
 
@@ -277,12 +303,12 @@ export default function Dashboard() {
 
         {/* Monthly Growth % */}
         <div className="glass-card p-5">
-          <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Monthly Growth</p>
+          <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Overall Returns</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">
             {overallGain >= 0 ? '+' : ''}{formatCurrency(overallGain)}
           </h3>
-          <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
-            <TrendingUp size={12} /> {isNewUser ? '0%' : '11.2%'} vs last month
+          <p className={`text-xs font-medium mt-2 flex items-center gap-1 ${overallGain >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+            {overallGain >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} All-time Portfolio Gain
           </p>
         </div>
       </div>
@@ -448,16 +474,31 @@ export default function Dashboard() {
         </div>
 
         {/* Budget Alerts */}
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4 pb-2 border-b border-gray-100">Budget Alerts</h3>
+        <div className="glass-card p-5 relative flex flex-col">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100 dark:border-[var(--border-soft)]">
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">Budget Alerts</h3>
+            <button 
+              onClick={() => setIsBudgetModalOpen(true)}
+              className="p-1.5 bg-[var(--bg-surface-hover)] text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+              title="Manage Budgets"
+            >
+              <Settings size={14} />
+            </button>
+          </div>
           <div className="space-y-5">
             {isNewUser || activeBudgetAlerts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-[var(--text-muted)] gap-2">
-                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
-                  <Wallet size={16} className="text-gray-400" />
+              <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-[var(--text-muted)] gap-2 flex-1">
+                <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-[var(--input-bg)] flex items-center justify-center border border-gray-100 dark:border-[var(--border-soft)]">
+                  <Wallet size={16} className="text-[var(--text-secondary)]" />
                 </div>
-                <p className="font-semibold">No budget alerts active</p>
-                <p className="scale-95 opacity-80">Tracked categories will appear here once transactions are recorded.</p>
+                <p className="font-semibold text-[var(--text-primary)]">No budget alerts active</p>
+                <p className="scale-95 opacity-80">Tracked categories will appear here once transactions are recorded against allocated budgets.</p>
+                <button 
+                  onClick={() => setIsBudgetModalOpen(true)}
+                  className="mt-2 px-3 py-1.5 border border-emerald-500 text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all font-semibold"
+                >
+                  Set a Budget
+                </button>
               </div>
             ) : (
               activeBudgetAlerts.map((alert, idx) => (
@@ -503,6 +544,108 @@ export default function Dashboard() {
           )}
         </div>
 
+      </div>
+
+      {/* Manage Budgets Modal */}
+      {isBudgetModalOpen && (
+        <ManageBudgetsModal 
+          onClose={() => setIsBudgetModalOpen(false)} 
+          currentBudgetsMap={currentBudgetsMap} 
+        />
+      )}
+    </div>
+  );
+}
+
+function ManageBudgetsModal({ onClose, currentBudgetsMap }) {
+  const { refreshData } = useApp();
+  const token = localStorage.getItem('token');
+  const [loading, setLoading] = React.useState(false);
+  const categories = ['Food', 'Shopping', 'Transport', 'Bills', 'Health', 'Others'];
+  
+  // State for all budget inputs
+  const [budgetValues, setBudgetValues] = React.useState(() => {
+    const init = {};
+    categories.forEach(cat => {
+      init[cat] = currentBudgetsMap[cat] || '';
+    });
+    return init;
+  });
+
+  const handleSave = async () => {
+    setLoading(true);
+    const month = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    try {
+      for (const cat of categories) {
+        const val = parseFloat(budgetValues[cat]);
+        if (!isNaN(val) && val > 0) {
+          // Save budget
+          await fetch('http://127.0.0.1:8000/api/budgets/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ category: cat, amount: val, month })
+          });
+        }
+      }
+      // Refresh context
+      await refreshData();
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-soft)] w-full max-w-md rounded-2xl shadow-2xl animate-fade-in-up">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--border-soft)]">
+          <div>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Allocate Monthly Budgets</h2>
+            <p className="text-xs text-[var(--text-muted)]">Set spending limits for your categories</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-[var(--text-secondary)] hover:text-rose-500 rounded-lg hover:bg-[var(--bg-surface-hover)]">
+            <X size={18} />
+          </button>
+        </div>
+        
+        <div className="p-5 max-h-[60vh] overflow-y-auto space-y-4">
+          {categories.map(cat => (
+            <div key={cat} className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-[var(--text-primary)]">{cat}</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--text-muted)] font-bold">₹</span>
+                <input
+                  type="number"
+                  value={budgetValues[cat]}
+                  onChange={(e) => setBudgetValues({...budgetValues, [cat]: e.target.value})}
+                  className="w-32 pl-7 pr-3 py-2 text-sm bg-[var(--input-bg)] border border-[var(--border-soft)] rounded-xl focus:outline-none focus:border-emerald-500 text-[var(--text-primary)] text-right"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-5 border-t border-[var(--border-soft)] flex justify-end gap-3">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] rounded-xl"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="px-6 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save Budgets'}
+          </button>
+        </div>
       </div>
     </div>
   );

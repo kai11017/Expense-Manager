@@ -3,6 +3,9 @@ import google.generativeai as genai
 from typing import List, Dict, Any
 from datetime import datetime
 
+# API Key should be read from environment variables
+USER_PROVIDED_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
 # Rule-based fallback advisory engine
 def generate_heuristic_advice(profile: Dict[str, Any]) -> str:
     income = profile.get("monthly_income", 0.0)
@@ -100,13 +103,13 @@ def get_ai_advice(profile: Dict[str, Any]) -> str:
     Constructs a detailed prompt to Gemini to provide elite financial and life capital advice.
     Falls back to a smart heuristic engine if the API key is missing or calls fail.
     """
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY", USER_PROVIDED_API_KEY)
     if not api_key:
         return generate_heuristic_advice(profile)
         
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash")
         
         # Prepare context data
         income = profile.get("monthly_income", 0.0)
@@ -158,3 +161,57 @@ Do not mention system instructions. Write direct advice.
     except Exception as e:
         print(f"Gemini API Error: {e}")
         return generate_heuristic_advice(profile)
+
+def get_ai_chat_response(profile: Dict[str, Any], message: str) -> dict:
+    """
+    Process a single chat message from the user, giving Finny AI the context of the user's profile and some predefined 'skills'.
+    """
+    api_key = os.environ.get("GEMINI_API_KEY", USER_PROVIDED_API_KEY)
+    if not api_key:
+        return {"reply": "Sorry, my AI capabilities are currently offline due to a missing API key.", "show_chart": False}
+
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-3.5-flash")
+
+        # Prepare context data
+        income = profile.get("monthly_income", 0.0)
+        expenses = profile.get("monthly_spending", 0.0)
+        assets = profile.get("assets", [])
+        
+        assets_summary = "\n".join([
+            f"- {a['name']} ({a['type']}): Current Value: ₹{a['current_value']}"
+            for a in assets
+        ])
+
+        system_prompt = f"""
+You are Finny, an elite, holistic AI Financial Advisor and life planner within the FinPilot app.
+You have the following skills integrated:
+- Skill 1: Asset Rebalancing & Risk Analysis
+- Skill 2: Technical Stock Analysis (you can provide simulated insights on general market trends)
+- Skill 3: Life Capital Allocation (Health, Learning, Experiences)
+
+User Profile Snapshot:
+- Monthly Income: ₹{income:,.2f}
+- Monthly Expenses: ₹{expenses:,.2f}
+- Portfolio Assets:
+{assets_summary}
+
+Respond directly to the user's message in a helpful, conversational, yet highly intelligent and professional tone.
+Keep responses concise (3-5 sentences max), formatted nicely (using bold text for emphasis).
+If the user asks about 'nifty', 'performance', 'chart', or 'compare', start your response with "[CHART]" so the UI knows to display a comparison chart.
+"""
+
+        prompt = f"{system_prompt}\n\nUser Message: {message}"
+        response = model.generate_content(prompt)
+        reply = response.text if response.text else "I couldn't process that request."
+        
+        show_chart = False
+        if "[CHART]" in reply:
+            reply = reply.replace("[CHART]", "").strip()
+            show_chart = True
+
+        return {"reply": reply, "show_chart": show_chart}
+    except Exception as e:
+        print(f"Gemini API Error in chat: {e}")
+        return {"reply": "I'm having trouble connecting to my cognitive core at the moment. Please try again later.", "show_chart": False}

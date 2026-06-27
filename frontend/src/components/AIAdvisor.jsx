@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
-  BrainCircuit, 
-  Send, 
   Sparkles, 
-  HelpCircle,
-  MessageSquare,
+  Send, 
+  Paperclip,
+  CheckCircle,
+  TrendingUp,
+  Shield,
+  ArrowRight,
+  History,
+  Share2,
   AlertTriangle,
-  Lightbulb,
-  Zap,
-  ChevronRight,
-  Bot,
-  User as UserIcon
+  Lightbulb
 } from 'lucide-react';
 
 export default function AIAdvisor() {
@@ -20,78 +20,24 @@ export default function AIAdvisor() {
   const [chatLog, setChatLog] = useState([
     {
       role: 'assistant',
-      content: "Hello! I am FinPilot AI. I evaluate your financial transactions, asset returns, and Life Portfolio allocations to guide your resource management. Ask me anything about your current budget warnings or life capital balances!"
+      content: "Your portfolio is currently **outperforming** the Nifty 50 by **2.4%** over the last 30 days. This alpha is primarily driven by your early exposure to the Energy sector and a recent rally in mid-cap tech holdings.",
+      showChart: true
     }
   ]);
   const [asking, setAsking] = useState(false);
   const chatEndRef = useRef(null);
+  const textareaRef = useRef(null);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatLog, asking]);
 
-  // Markdown Parser to HTML elements
-  const parseBoldText = (text) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-bold text-[var(--text-primary)]">{part.slice(2, -2)}</strong>;
-      }
-      return part;
-    });
-  };
-
-  const renderMarkdown = (text) => {
-    if (!text) return null;
-    const lines = text.split('\n');
-    return lines.map((line, idx) => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('# ')) {
-        return <h1 key={idx} className="text-xl font-extrabold text-[var(--text-primary)] mt-6 mb-3 pb-2 border-b border-white/5">{trimmed.replace('# ', '')}</h1>;
-      }
-      if (trimmed.startsWith('## ')) {
-        return <h2 key={idx} className="text-lg font-bold text-gray-100 mt-5 mb-3 flex items-center gap-2 border-b border-white/[0.03] pb-2">{trimmed.replace('## ', '')}</h2>;
-      }
-      if (trimmed.startsWith('### ')) {
-        return <h3 key={idx} className="text-base font-bold text-[var(--text-primary)] mt-4 mb-2">{trimmed.replace('### ', '')}</h3>;
-      }
-      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-        const itemText = trimmed.replace(/^[-*]\s+/, '');
-        return (
-          <div key={idx} className="flex items-start gap-2.5 text-sm text-[var(--text-primary)] mb-2 pl-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0"></span>
-            <span className="flex-1">{parseBoldText(itemText)}</span>
-          </div>
-        );
-      }
-      if (/^\d+\.\s/.test(trimmed)) {
-        const numMatch = trimmed.match(/^(\d+)\.\s(.*)/);
-        if (numMatch) {
-          return (
-            <div key={idx} className="flex items-start gap-2.5 text-sm text-[var(--text-primary)] mb-2 pl-4">
-              <span className="w-5 h-5 rounded-md bg-purple-500/15 text-purple-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{numMatch[1]}</span>
-              <span className="flex-1">{parseBoldText(numMatch[2])}</span>
-            </div>
-          );
-        }
-      }
-      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-        return <p key={idx} className="text-sm font-bold text-[var(--text-primary)] leading-relaxed mb-3">{parseBoldText(trimmed)}</p>;
-      }
-      if (trimmed.startsWith('ℹ️') || trimmed.startsWith('⚠️') || trimmed.startsWith('✅') || trimmed.startsWith('🚨')) {
-        return (
-          <div key={idx} className="p-3 bg-gray-50 border border-white/5 rounded-xl text-sm text-[var(--text-primary)] leading-relaxed mb-3 flex gap-2">
-            <span>{trimmed.slice(0, 2)}</span>
-            <span className="flex-1">{parseBoldText(trimmed.slice(2))}</span>
-          </div>
-        );
-      }
-      if (trimmed === '') {
-        return <div key={idx} className="h-2"></div>;
-      }
-      return <p key={idx} className="text-sm text-[var(--text-primary)] leading-relaxed mb-2.5">{parseBoldText(line)}</p>;
-    });
+  // Adjust textarea height dynamically
+  const handleTextareaInput = (e) => {
+    const target = e.target;
+    target.style.height = 'auto';
+    target.style.height = `${target.scrollHeight}px`;
   };
 
   // Submit custom advisory query
@@ -101,209 +47,341 @@ export default function AIAdvisor() {
 
     const userMsg = question;
     setQuestion('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
     setChatLog(prev => [...prev, { role: 'user', content: userMsg }]);
     setAsking(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/advisor/summary`, {
-        headers: getHeaders()
+      const response = await fetch(`${API_BASE_URL}/advisor/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders()
+        },
+        body: JSON.stringify({ message: userMsg })
       });
-      const dashData = await response.json();
       
-      const token = localStorage.getItem('token');
-      // Request advice or generate specific reply using standard gemini prompt fallback
-      const apiRes = await fetch(`${API_BASE_URL}/advisor/predictions`, {
-        headers: getHeaders()
-      });
-      const predData = await apiRes.json();
+      const data = await response.json();
       
-      // Call custom model logic via fetch mock prompt
-      let reply = "";
-      const q_lower = userMsg.toLowerCase();
-      
-      if (q_lower.includes("food") || q_lower.includes("spending")) {
-        reply = `Based on your database log, your monthly food spending has seen a month-over-month increase of 14%. Your predicted spending for next month is ₹${dashData.prediction}. We suggest creating an automated food cap budget of ₹12,000/month and shifting bulk groceries to instamart/blinkit subscription plans.`;
-      } else if (q_lower.includes("health") || q_lower.includes("life")) {
-        reply = `You have invested ₹${dashData.net_worth - dashData.prediction} in wellbeing, learning, and travel. This shows a strong self-allocation rate of 28% of your overall net worth. The physical gym and standing desk assets you purchased are excellent hedges against productivity decay. Keep expanding your Learning Portfolio!`;
-      } else if (q_lower.includes("emergency") || q_lower.includes("fund")) {
-        reply = `Your emergency fund currently holds ₹60,000. This covers about 1.5 months of your typical monthly expenses (₹${dashData.monthly_spending}). AI Recommendation: Re-allocate savings to expand this buffer to ₹1,80,000 before escalating crypto or high-risk stocks purchases.`;
-      } else {
-        reply = `Evaluating portfolio allocations... Your net worth is ₹${dashData.net_worth}. Your overall gains are +${dashData.investment_return}% across traditional holdings. AI advice suggests containing shopping costs and redirecting index funds to SIP trackers. Ask me specifically about "emergency fund target", "food budget warning", or "my life portfolio value" for structural breakdowns.`;
-      }
-
-      setChatLog(prev => [...prev, { role: 'assistant', content: reply }]);
+      setChatLog(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.reply || "I'm having trouble thinking right now.", 
+        showChart: data.show_chart || false 
+      }]);
     } catch (err) {
-      setChatLog(prev => [...prev, { role: 'assistant', content: "I encountered an error trying to process your profile. Make sure the database is online." }]);
+      setChatLog(prev => [...prev, { role: 'assistant', content: "I encountered an error connecting to my AI core. Make sure the backend is running and API keys are set." }]);
     } finally {
       setAsking(false);
     }
   };
 
+  const handleShareChat = async () => {
+    const text = chatLog.map(msg => `${msg.role === 'user' ? 'You' : 'Finny AI'}: ${msg.content}`).join("\n\n");
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "FinPilot AI Chat",
+          text: text,
+        });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert("Chat copied to clipboard!");
+      }
+    } catch (err) {
+      console.error("Error sharing chat:", err);
+    }
+  };
+
+  const parseBoldText = (text) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   const quickPrompts = [
-    { text: "Check my food budget", icon: "🍕" },
-    { text: "Emergency fund target", icon: "🛡️" },
-    { text: "Life portfolio status", icon: "🌱" },
-    { text: "Investment returns", icon: "📈" }
+    "Analyse Tesla P/E",
+    "Tax Harvest Strategy",
+    "Top ETFs for 2024"
   ];
 
   return (
-    <div className="flex-1 space-y-6 max-w-7xl mx-auto pb-10">
-      {/* Header */}
-      <div className="flex justify-between items-end animate-fade-in-up">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="badge badge-green">
-              <Sparkles size={10} />
-              AI-Powered
+    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-3rem)] overflow-hidden pb-4">
+      
+      {/* Left Column: Context & Insights */}
+      <div className="w-full lg:w-[380px] flex flex-col gap-6 overflow-y-auto pr-1">
+        
+        {/* AI Context Sync Status */}
+        <div className="glass-card p-6 border border-outline-variant">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-on-surface">AI Context</h3>
+            <span className="bg-tertiary/10 text-tertiary px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-tertiary rounded-full animate-pulse"></span> Live Sync
             </span>
           </div>
-          <h2 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
-            Financial <span className="text-gradient-purple">Advisor</span>
-          </h2>
-          <p className="text-[var(--text-muted)] text-sm mt-1">Wealth diagnostics, budget forecasting, and life planning analysis.</p>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined">account_balance_wallet</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900">Portfolio Active</p>
+                <p className="text-xs text-on-surface-variant">Last updated 2m ago</p>
+              </div>
+              <CheckCircle className="text-emerald-500" size={18} />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+                <span className="material-symbols-outlined">analytics</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900">Market Data Feed</p>
+                <p className="text-xs text-on-surface-variant">Real-time NYSE/NSE active</p>
+              </div>
+              <CheckCircle className="text-emerald-500" size={18} />
+            </div>
+          </div>
         </div>
+
+        {/* Top Opportunities */}
+        <div className="glass-card p-6 border border-outline-variant relative overflow-hidden group">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="text-primary" size={20} />
+            <h3 className="text-lg font-bold text-on-surface">Top Opportunities</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer border border-transparent hover:border-primary/20">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="font-bold text-gray-900">Wipro Limited</p>
+                  <p className="text-xs text-on-surface-variant">Sector: IT Services</p>
+                </div>
+                <span className="text-emerald-600 font-bold text-sm">+4.2%</span>
+              </div>
+              <p className="text-xs text-on-surface-variant mb-3 leading-snug">AI suggests increasing stake based on projected 12% dividend yield and technical breakout.</p>
+              <button 
+                onClick={(e) => { e.target.innerText = "Recommendation Applied"; e.target.className="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg text-xs font-bold transition-all"; setTimeout(() => alert("Wipro recommendation applied to plan!"), 100); }}
+                className="w-full bg-primary-container text-on-primary-container py-2 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all"
+              >
+                Apply Recommendation
+              </button>
+            </div>
+            
+            <div className="p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="font-bold text-gray-900">HDFC Bank</p>
+                  <p className="text-xs text-on-surface-variant">Sector: Finance</p>
+                </div>
+                <span className="text-emerald-600 font-bold text-sm">+1.8%</span>
+              </div>
+              <p className="text-xs text-on-surface-variant leading-snug">Undervalued relative to private sector peers. Suggested entry point: ₹1,620.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Risk Monitor */}
+        <div className="glass-card p-6 border border-outline-variant bg-error-container/5">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="text-rose-600" size={20} />
+            <h3 className="text-lg font-bold text-on-surface">Risk Monitor</h3>
+          </div>
+          <div className="flex items-center gap-4 mb-3">
+            <div className="relative w-16 h-16 flex-shrink-0">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle className="text-gray-200" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="5"></circle>
+                <circle className="text-rose-600" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeDasharray="176" stroke-dashoffset="44" stroke-width="5"></circle>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center font-bold text-xs">75%</div>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">High Concentration</p>
+              <p className="text-xs text-on-surface-variant leading-snug">IT sector exposure exceeds 40% of total portfolio value.</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => { setQuestion("Please create a diversification plan to reduce my IT sector exposure."); document.querySelector('textarea')?.focus(); }}
+            className="text-primary font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
+          >
+            View Diversification Plan <span className="material-symbols-outlined text-xs">arrow_forward</span>
+          </button>
+        </div>
+
       </div>
 
-      {/* Main advisory layouts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left Column: Full Report */}
-        <div className="lg:col-span-2 glass-card p-6 min-h-[500px] animate-fade-in-up delay-75">
-          <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/5">
-            <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <div className="p-1.5 bg-purple-500/10 rounded-lg">
-                <Sparkles size={16} className="text-purple-400" />
-              </div>
-              Comprehensive Advisory Report
-            </h3>
-            <span className="badge badge-green text-[9px]">
-              <Zap size={8} />
-              Live
-            </span>
+      {/* Right Column: AI Workspace (Chat) */}
+      <div className="flex-1 flex flex-col glass-card rounded-2xl border border-outline-variant bg-white relative overflow-hidden shadow-lg shadow-purple-500/5">
+        
+        {/* Chat Header */}
+        <div className="p-5 border-b border-outline-variant flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-tertiary flex items-center justify-center shadow-lg shadow-tertiary/20 text-white">
+              <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 leading-tight">Ask Finny</h2>
+              <p className="text-xs text-on-surface-variant">Your premium AI financial co-pilot</p>
+            </div>
           </div>
-          
-          <div className="prose prose-invert max-w-none overflow-y-auto max-h-[700px] pr-2">
-            {dashboardData?.ai_advice ? (
-              renderMarkdown(dashboardData.ai_advice)
-            ) : (
-              <div className="py-16 text-center animate-fade-in">
-                <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-white/5 flex items-center justify-center mx-auto mb-4">
-                  <BrainCircuit size={24} className="text-gray-600" />
-                </div>
-                <p className="text-sm text-[var(--text-muted)] font-medium mb-1">No advisory report generated</p>
-                <p className="text-xs text-[var(--text-muted)]">Seed data or add transactions to trigger planning diagnostics.</p>
-              </div>
-            )}
+          <div className="flex items-center gap-1">
+            <button type="button" className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors" title="Chat History">
+              <History size={18} />
+            </button>
+            <button onClick={handleShareChat} type="button" className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors" title="Share Chat">
+              <Share2 size={18} />
+            </button>
           </div>
         </div>
 
-        {/* Right Column: AI Consultant Chat & Warnings */}
-        <div className="space-y-5 flex flex-col">
-          {/* Budget Warnings Panel */}
-          {dashboardData?.prediction_warning && (
-            <div className="glass-card p-4 animate-fade-in-up delay-150" style={{ borderLeft: '3px solid #F59E0B' }}>
-              <h3 className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5 uppercase tracking-[0.1em] mb-2">
-                <AlertTriangle size={14} className="text-amber-400" />
-                System Warnings
-              </h3>
-              <p className="text-[11px] text-[var(--text-muted)] leading-relaxed mb-2">
-                Regression algorithm detected spending anomalies.
-              </p>
-              <div className="p-2.5 bg-amber-950/15 border border-amber-500/10 text-amber-200 text-xs rounded-xl leading-relaxed">
-                {dashboardData.prediction_warning}
+        {/* Chat History */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {chatLog.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                
+                {msg.role === 'assistant' ? (
+                  <div className="w-9 h-9 rounded-full bg-tertiary flex-shrink-0 flex items-center justify-center text-white">
+                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                  </div>
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-emerald-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-xs">
+                    {useApp().user?.name ? useApp().user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1.5">
+                  <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                    msg.role === 'user' 
+                      ? 'bg-surface-container-high text-gray-900 rounded-tr-none border border-outline-variant/30 shadow-sm' 
+                      : 'bg-tertiary/5 border border-tertiary/10 text-gray-900 rounded-tl-none'
+                  }`}>
+                    <p className="whitespace-pre-line">{parseBoldText(msg.content)}</p>
+
+                    {/* Conditional Comparison Chart */}
+                    {msg.showChart && (
+                      <div className="bg-white rounded-xl border border-outline-variant p-4 mt-3">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">30D Performance Comparison</h4>
+                          <div className="flex gap-3">
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                              <span className="text-[10px] font-bold text-gray-700">Portfolio (+8.1%)</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                              <span className="text-[10px] font-bold text-gray-700">Nifty 50 (+5.7%)</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="h-32 flex items-end gap-3 px-2 pb-2 border-b border-gray-100">
+                          <div className="flex-1 bg-blue-50 rounded-t relative h-[40%]">
+                            <div className="absolute bottom-0 w-full bg-blue-300 h-[60%] rounded-t"></div>
+                            <div className="absolute bottom-0 w-full bg-emerald-500 h-[85%] rounded-t opacity-70"></div>
+                          </div>
+                          <div className="flex-1 bg-blue-50 rounded-t relative h-[45%]">
+                            <div className="absolute bottom-0 w-full bg-blue-300 h-[65%] rounded-t"></div>
+                            <div className="absolute bottom-0 w-full bg-emerald-500 h-[90%] rounded-t opacity-70"></div>
+                          </div>
+                          <div className="flex-1 bg-blue-50 rounded-t relative h-[55%]">
+                            <div className="absolute bottom-0 w-full bg-blue-300 h-[70%] rounded-t"></div>
+                            <div className="absolute bottom-0 w-full bg-emerald-500 h-[95%] rounded-t opacity-70"></div>
+                          </div>
+                          <div className="flex-1 bg-blue-50 rounded-t relative h-[75%]">
+                            <div className="absolute bottom-0 w-full bg-blue-300 h-[75%] rounded-t"></div>
+                            <div className="absolute bottom-0 w-full bg-emerald-500 h-[100%] rounded-t"></div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-[9px] text-on-surface-variant mt-2 font-semibold">
+                          <span>MAR 01</span>
+                          <span>MAR 15</span>
+                          <span>TODAY</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {msg.role === 'assistant' && (
+                      <p className="text-xs text-on-surface-variant italic border-l-2 border-tertiary pl-3 mt-3">
+                        "Finny Insight: Rebalancing is recommended in the next 14 days to lock in gains and manage sector risk."
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-[9px] text-on-surface-variant uppercase font-semibold pl-1">
+                    {msg.role === 'user' ? 'You' : 'Finny AI'}
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          ))}
+          {asking && (
+            <div className="flex justify-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-tertiary flex-shrink-0 flex items-center justify-center text-white">
+                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+              </div>
+              <div className="bg-tertiary/5 border border-tertiary/10 px-4 py-3 rounded-2xl rounded-tl-none">
+                <div className="flex gap-1.5 items-center py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </div>
               </div>
             </div>
           )}
+          <div ref={chatEndRef}></div>
+        </div>
 
-          {/* AI Interactive Chat Box */}
-          <div className="glass-card p-4 flex flex-col h-[400px] justify-between animate-fade-in-up delay-225">
-            <h3 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase tracking-[0.1em] mb-3 pb-2 border-b border-white/5">
-              <MessageSquare size={14} className="text-indigo-600" />
-              Consult Planner
-            </h3>
-
-            {/* Chat message display area */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1 mb-3 text-xs">
-              {chatLog.map((msg, i) => (
-                <div 
-                  key={i} 
-                  className={`flex gap-2 animate-fade-in ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {msg.role === 'assistant' && (
-                    <div className="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Bot size={12} className="text-purple-400" />
-                    </div>
-                  )}
-                  <div className={`p-3 rounded-2xl max-w-[80%] leading-relaxed ${
-                    msg.role === 'user' 
-                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white rounded-br-md shadow-md shadow-emerald-600/15' 
-                      : 'bg-gray-100 border border-white/5 text-[var(--text-primary)] rounded-bl-md'
-                  }`}>
-                    <p>{msg.content}</p>
-                  </div>
-                  {msg.role === 'user' && (
-                    <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <UserIcon size={12} className="text-indigo-600" />
-                    </div>
-                  )}
-                </div>
-              ))}
-              {asking && (
-                <div className="flex gap-2 items-start">
-                  <div className="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                    <Bot size={12} className="text-purple-400" />
-                  </div>
-                  <div className="bg-gray-100 border border-white/5 p-3 rounded-2xl rounded-bl-md max-w-[80%]">
-                    <div className="flex gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef}></div>
-            </div>
-
-            {/* Form query input */}
-            <form onSubmit={handleAskQuestion} className="flex gap-2">
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ask about my budget..."
-                className="flex-1 p-2.5 glass-input text-xs"
-              />
+        {/* Chat Input */}
+        <div className="p-5 bg-white relative border-t border-gray-100">
+          <div className="flex flex-wrap gap-2 mb-3">
+            {quickPrompts.map((prompt) => (
               <button
-                type="submit"
-                disabled={asking || !question.trim()}
-                className="p-2.5 bg-gradient-to-r from-emerald-600 to-emerald-600 hover:from-emerald-500 hover:to-emerald-500 text-white rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                key={prompt}
+                type="button"
+                onClick={() => setQuestion(prompt)}
+                className="bg-surface-container px-3.5 py-1.5 rounded-full text-xs font-semibold text-on-surface-variant hover:bg-tertiary hover:text-white transition-all"
               >
-                <Send size={14} />
+                {prompt}
               </button>
-            </form>
+            ))}
           </div>
           
-          {/* Quick Consultation shortcuts */}
-          <div className="glass-card p-4 animate-fade-in-up delay-300">
-            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] flex items-center gap-1.5 mb-2.5">
-              <Lightbulb size={12} className="text-amber-400" />
-              Quick Prompts
-            </h4>
-            <div className="grid grid-cols-2 gap-1.5">
-              {quickPrompts.map((q) => (
-                <button
-                  key={q.text}
-                  onClick={() => setQuestion(q.text)}
-                  className="text-[10px] bg-gray-50 hover:bg-gray-100 text-[var(--text-muted)] hover:text-[var(--text-primary)] py-2 px-2.5 rounded-lg border border-white/5 hover:border-white/10 transition-all duration-200 text-left flex items-center gap-1.5"
-                >
-                  <span>{q.icon}</span>
-                  {q.text}
-                </button>
-              ))}
-            </div>
-          </div>
+          <form onSubmit={handleAskQuestion} className="flex items-center gap-3 bg-surface-container p-2 rounded-2xl border border-outline-variant focus-within:border-tertiary transition-all">
+            <button type="button" className="p-2 text-on-surface-variant hover:text-tertiary transition-colors" title="Attach file">
+              <Paperclip size={18} />
+            </button>
+            <textarea
+              ref={textareaRef}
+              rows="1"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onInput={handleTextareaInput}
+              placeholder="Type your message to Finny..."
+              className="flex-1 bg-transparent border-none focus:ring-0 outline-none focus:outline-none text-sm placeholder:text-on-surface-variant/50 resize-none py-2"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAskQuestion(e);
+                }
+              }}
+            />
+            <button 
+              type="submit"
+              disabled={asking || !question.trim()}
+              className="bg-primary-container text-on-primary-container w-11 h-11 rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-md active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Send size={16} />
+            </button>
+          </form>
+          <p className="text-[10px] text-center text-on-surface-variant mt-3">Finny AI can make mistakes. Always verify with your financial advisor before trading.</p>
         </div>
+
       </div>
+
     </div>
   );
 }

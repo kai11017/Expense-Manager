@@ -26,6 +26,21 @@
   --text-muted: #9CA3AF;
 }
 
+html.dark {
+  --bg-app: #0B0F19;
+  --bg-surface: #171E2D;
+  --bg-sidebar: #06090F;
+  --bg-surface-hover: #1F2937; 
+  --border-soft: #374151;
+  --shadow-soft: 0px 4px 14px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0px 10px 24px rgba(0, 0, 0, 0.4);
+  --input-bg: #111827;
+  --input-focus-bg: #1F2937;
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, sans-serif;

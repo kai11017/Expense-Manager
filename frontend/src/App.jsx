@@ -9,8 +9,10 @@ import History from './components/History';
 import News from './components/News';
 import Login from './components/Login';
 import Landing from './components/Landing';
-import Profile from './components/Profile';
+import Settings from './components/Settings';
 import OnboardingTour from './components/OnboardingTour';
+import StockAnalysis from './components/StockAnalysis';
+import Support from './components/Support';
 
 export default function App() {
   const { token, activeTab, user } = useApp();
@@ -29,10 +31,14 @@ export default function App() {
         return <AIAdvisor />;
       case 'history':
         return <History />;
-      case 'profile':
-        return <Profile />;
+      case 'settings':
+        return <Settings />;
       case 'news':
         return <News />;
+      case 'analysis':
+        return <StockAnalysis />;
+      case 'support':
+        return <Support />;
       default:
         return <Dashboard />;
     }

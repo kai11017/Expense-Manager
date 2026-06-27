@@ -80,6 +80,12 @@ class AssetBase(BaseModel):
     quantity: float = 1.0
     purchase_date: Optional[str] = None
     notes: Optional[str] = None
+    
+    # Real-Time Stock Tracking
+    symbol: Optional[str] = None
+    exchange: Optional[str] = "NSE"
+    sector: Optional[str] = "Equity"
+    currency: Optional[str] = "INR"
 
 class AssetCreate(AssetBase):
     pass
@@ -92,6 +98,10 @@ class AssetUpdate(BaseModel):
     quantity: Optional[float] = None
     purchase_date: Optional[str] = None
     notes: Optional[str] = None
+    symbol: Optional[str] = None
+    exchange: Optional[str] = None
+    sector: Optional[str] = None
+    currency: Optional[str] = None
 
 class AssetOut(AssetBase):
     id: int
@@ -146,6 +156,13 @@ class AIAdviceOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ChatRequest(BaseModel):
+    message: str
+
+class ChatResponse(BaseModel):
+    reply: str
+    show_chart: Optional[bool] = False
 
 
 # Dashboard Out Schema

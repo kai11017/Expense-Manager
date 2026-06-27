@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   History as HistoryIcon, 
@@ -21,35 +21,18 @@ import {
 } from 'recharts';
 
 export default function History() {
-  const { token, API_BASE_URL } = useApp();
-  const [historyData, setHistoryData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { transactions } = useApp();
 
   // Filters
   const [timeRange, setTimeRange] = useState('Last 6 Months');
-  const [year, setYear] = useState('2026');
+  const [year, setYear] = useState(new Date().getFullYear().toString());
   const [category, setCategory] = useState('All Categories');
   const [type, setType] = useState('All');
+  
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
 
-  useEffect(() => {
-    fetchHistory();
-  }, [token]);
-
-  const fetchHistory = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/advisor/history`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setHistoryData(data);
-      }
-    } catch (err) {
-      console.error("Error fetching history", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const standardCategories = ["Food", "Rent", "Bills", "Health", "Learning", "Experiences", "Shopping", "Miscellaneous"];
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-IN', {
@@ -59,29 +42,118 @@ export default function History() {
     }).format(val || 0);
   };
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-10">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-transparent border-t-emerald-500 border-r-emerald-500/30"></div>
-      </div>
-    );
-  }
+  // 1. Filter Transactions
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const d = new Date(t.date);
+      const now = new Date();
+      
+      let matchesTime = true;
+      if (timeRange === 'This Month') {
+        matchesTime = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      } else if (timeRange === 'Last Month') {
+        let lm = new Date(now);
+        lm.setMonth(lm.getMonth() - 1);
+        matchesTime = d.getMonth() === lm.getMonth() && d.getFullYear() === lm.getFullYear();
+      } else if (timeRange === 'Last 3 Months') {
+        let l3 = new Date(now);
+        l3.setMonth(l3.getMonth() - 3);
+        matchesTime = d >= l3;
+      } else if (timeRange === 'Last 6 Months') {
+        let l6 = new Date(now);
+        l6.setMonth(l6.getMonth() - 6);
+        matchesTime = d >= l6;
+      } else if (timeRange === 'This Year') {
+        matchesTime = d.getFullYear() === parseInt(year);
+      } else if (timeRange === 'Custom') {
+        const cStart = customStart ? new Date(customStart) : new Date(0);
+        const cEnd = customEnd ? new Date(customEnd) : new Date(9999, 11, 31);
+        cEnd.setHours(23, 59, 59, 999);
+        matchesTime = d >= cStart && d <= cEnd;
+      } else if (timeRange === 'All Time') {
+        matchesTime = true;
+      }
 
-  // Calculate totals
+      const matchesCategory = category === 'All Categories' || t.category === category;
+      const matchesType = type === 'All' || (type.toLowerCase() === t.type);
+
+      return matchesTime && matchesCategory && matchesType;
+    });
+  }, [transactions, timeRange, year, category, type, customStart, customEnd]);
+
+  // 2. Generate Monthly History Data
+  const historyData = useMemo(() => {
+    if (filteredTransactions.length === 0) return [];
+
+    const monthlyData = {};
+    let minDate = new Date(Math.min(...filteredTransactions.map(t => new Date(t.date))));
+    let maxDate = new Date(Math.max(...filteredTransactions.map(t => new Date(t.date))));
+    
+    // Ensure at least 2 months difference so the AreaChart can draw a line
+    if (minDate.getFullYear() === maxDate.getFullYear() && minDate.getMonth() === maxDate.getMonth()) {
+      minDate.setMonth(minDate.getMonth() - 1);
+    }
+
+    // Generate all months between minDate and maxDate
+    let current = new Date(minDate);
+    current.setDate(1);
+    while (current <= maxDate || (current.getFullYear() === maxDate.getFullYear() && current.getMonth() === maxDate.getMonth())) {
+      const monthKey = current.toLocaleString('default', { month: 'short', year: 'numeric' });
+      monthlyData[monthKey] = { 
+        month: monthKey, 
+        income: 0, 
+        expenses: 0, 
+        savings: 0, 
+        sortKey: current.getFullYear() * 100 + current.getMonth() 
+      };
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    filteredTransactions.forEach(t => {
+      const d = new Date(t.date);
+      const monthKey = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+      if (monthlyData[monthKey]) {
+        if (t.type === 'income') {
+          monthlyData[monthKey].income += t.amount;
+        } else if (t.type === 'expense') {
+          monthlyData[monthKey].expenses += t.amount;
+        }
+        monthlyData[monthKey].savings = monthlyData[monthKey].income - monthlyData[monthKey].expenses;
+      }
+    });
+
+    return Object.values(monthlyData).sort((a, b) => b.sortKey - a.sortKey);
+  }, [filteredTransactions]);
+
+  // Calculate totals based on filtered data
   const totalIncome = historyData.reduce((acc, curr) => acc + curr.income, 0);
   const totalExpense = historyData.reduce((acc, curr) => acc + curr.expenses, 0);
   const totalSavings = historyData.reduce((acc, curr) => acc + curr.savings, 0);
   const avgExpense = historyData.length > 0 ? totalExpense / historyData.length : 0;
 
-  // Mock Category Breakdown for Donut Chart
-  const categoryChartData = [
-    { name: 'Food', value: 30200, color: '#3B82F6' },
-    { name: 'Shopping', value: 34500, color: '#8B5CF6' },
-    { name: 'Transport', value: 24700, color: '#F59E0B' },
-    { name: 'Bills', value: 24000, color: '#10B981' },
-    { name: 'Health', value: 16500, color: '#F43F5E' },
-    { name: 'Others', value: 12400, color: '#6B7280' }
-  ];
+  // 3. Category Breakdown Data
+  const categoryChartData = useMemo(() => {
+    const categoryTotals = {};
+    filteredTransactions.filter(t => t.type === 'expense').forEach(t => {
+      if (!categoryTotals[t.category]) categoryTotals[t.category] = 0;
+      categoryTotals[t.category] += t.amount;
+    });
+    
+    const colors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F43F5E', '#6B7280', '#14B8A6', '#EC4899'];
+    return Object.keys(categoryTotals).map((cat, i) => ({
+      name: cat,
+      value: categoryTotals[cat],
+      color: colors[i % colors.length]
+    })).sort((a, b) => b.value - a.value);
+  }, [filteredTransactions]);
+
+  let dateRangeString = 'No data';
+  if (filteredTransactions.length > 0) {
+    const dates = filteredTransactions.map(t => new Date(t.date));
+    const minDate = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const maxDate = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    dateRangeString = `${minDate} - ${maxDate}`;
+  }
 
   return (
     <div className="flex-1 space-y-6 max-w-7xl mx-auto pb-10">
@@ -92,7 +164,7 @@ export default function History() {
           <h2 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">History</h2>
           <p className="text-[var(--text-muted)] text-sm mt-1">Analyze your financial history in detail</p>
         </div>
-        <button className="btn-primary flex items-center gap-2">
+        <button onClick={() => window.print()} className="btn-primary flex items-center gap-2">
           <Download size={16} /> Export
         </button>
       </div>
@@ -108,35 +180,54 @@ export default function History() {
               <option>Last 3 Months</option>
               <option>Last 6 Months</option>
               <option>This Year</option>
+              <option>Custom</option>
+              <option>All Time</option>
             </select>
           </div>
-          <div className="flex-1 min-w-[120px]">
-            <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">Year</label>
-            <select value={year} onChange={e => setYear(e.target.value)} className="w-full glass-input text-sm">
-              <option>2026</option>
-              <option>2025</option>
-            </select>
-          </div>
+          {timeRange === 'This Year' && (
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">Year</label>
+              <select value={year} onChange={e => setYear(e.target.value)} className="w-full glass-input text-sm">
+                {[...Array(5)].map((_, i) => {
+                  const y = (new Date().getFullYear() - i).toString();
+                  return <option key={y} value={y}>{y}</option>;
+                })}
+              </select>
+            </div>
+          )}
           <div className="flex-1 min-w-[150px]">
             <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">Category</label>
             <select value={category} onChange={e => setCategory(e.target.value)} className="w-full glass-input text-sm">
               <option>All Categories</option>
-              <option>Food</option>
-              <option>Rent</option>
+              {standardCategories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
           <div className="flex-1 min-w-[120px]">
             <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">Type</label>
             <select value={type} onChange={e => setType(e.target.value)} className="w-full glass-input text-sm">
               <option>All</option>
-              <option>Income</option>
-              <option>Expense</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
             </select>
           </div>
-          <div className="flex-[2] min-w-[200px]">
+          <div className="flex-[2] min-w-[250px]">
             <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">Date Range</label>
-            <div className="glass-input text-sm flex items-center gap-2 text-[var(--text-secondary)]">
-              01 Jan 2026 - 30 Jun 2026 <Calendar size={14} className="ml-auto" />
+            <div className="flex items-center gap-2">
+              <input 
+                type="date" 
+                value={customStart} 
+                onChange={e => { setCustomStart(e.target.value); setTimeRange('Custom'); }}
+                className="w-full glass-input text-sm text-[var(--text-secondary)] px-2 py-1" 
+              />
+              <span className="text-[var(--text-muted)]">to</span>
+              <input 
+                type="date" 
+                value={customEnd} 
+                onChange={e => { setCustomEnd(e.target.value); setTimeRange('Custom'); }}
+                className="w-full glass-input text-sm text-[var(--text-secondary)] px-2 py-1" 
+              />
             </div>
           </div>
         </div>
@@ -164,14 +255,14 @@ export default function History() {
                     <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} tickFormatter={(val) => `₹${val/1000}k`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-soft)" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(val) => `₹${val/1000}k`} />
                 <Tooltip 
                   formatter={(value) => formatCurrency(value)}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-soft)', backgroundColor: 'var(--bg-surface-hover)', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: 'var(--text-primary)' }} />
                 <Area type="monotone" dataKey="income" name="Income" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorIncome)" />
                 <Area type="monotone" dataKey="savings" name="Savings" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorSavings)" />
                 <Area type="monotone" dataKey="expenses" name="Expense" stroke="#F43F5E" strokeWidth={2} fillOpacity={1} fill="url(#colorExpense)" />
@@ -184,7 +275,7 @@ export default function History() {
         <div className="space-y-4">
           <div className="glass-card p-5 h-full flex flex-col justify-between">
             <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">Summary</h3>
-            <p className="text-[10px] text-[var(--text-muted)] mb-6">Jan 2026 - Jun 2026</p>
+            <p className="text-[10px] text-[var(--text-muted)] mb-6">{dateRangeString}</p>
             
             <div className="space-y-6">
               <div>
@@ -199,7 +290,7 @@ export default function History() {
                 <p className="text-xs text-[var(--text-secondary)] font-medium mb-1">Total Savings</p>
                 <p className="text-lg font-bold text-blue-500">{formatCurrency(totalSavings)}</p>
               </div>
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-[var(--border-soft)]">
                 <p className="text-xs text-[var(--text-secondary)] font-medium mb-1">Avg Monthly Expense</p>
                 <p className="text-base font-bold text-[var(--text-primary)]">{formatCurrency(avgExpense)}</p>
               </div>
@@ -215,7 +306,7 @@ export default function History() {
           <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">Breakdown</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-[var(--text-primary)]">
-              <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] border-b border-gray-100">
+              <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] border-b border-[var(--border-soft)]">
                 <tr>
                   <th className="py-3 px-2 font-semibold">Month</th>
                   <th className="py-3 px-2 font-semibold text-right">Income</th>
@@ -223,9 +314,9 @@ export default function History() {
                   <th className="py-3 px-2 font-semibold text-right">Savings</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[var(--border-soft)]">
                 {historyData.map((row) => (
-                  <tr key={row.month} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={row.month} className="hover:bg-[var(--bg-surface-hover)] transition-colors">
                     <td className="py-3 px-2 font-medium">{row.month}</td>
                     <td className="py-3 px-2 text-right font-semibold text-[var(--text-primary)]">{formatCurrency(row.income)}</td>
                     <td className="py-3 px-2 text-right font-semibold text-[var(--text-primary)]">{formatCurrency(row.expenses)}</td>
@@ -233,7 +324,7 @@ export default function History() {
                   </tr>
                 ))}
                 {/* Total Row */}
-                <tr className="bg-gray-50/50 font-bold border-t border-gray-200">
+                <tr className="bg-[var(--bg-surface-hover)] font-bold border-t border-[var(--border-soft)]">
                   <td className="py-4 px-2">Total</td>
                   <td className="py-4 px-2 text-right">{formatCurrency(totalIncome)}</td>
                   <td className="py-4 px-2 text-right">{formatCurrency(totalExpense)}</td>
@@ -250,37 +341,43 @@ export default function History() {
           <p className="text-[10px] text-[var(--text-muted)] mb-4">Total Expenses</p>
           
           <div className="flex-1 flex flex-col items-center justify-center relative min-h-[250px]">
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={categoryChartData}
-                  innerRadius={70}
-                  outerRadius={100}
-                  paddingAngle={2}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {categoryChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value) => formatCurrency(value)}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(totalExpense)}</span>
-              <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Total Expense</span>
-            </div>
+            {categoryChartData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={categoryChartData}
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {categoryChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value)}
+                      contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-soft)', backgroundColor: 'var(--bg-surface-hover)', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(totalExpense)}</span>
+                  <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Total Expense</span>
+                </div>
+              </>
+            ) : (
+              <div className="text-[var(--text-muted)] text-sm">No expense data found</div>
+            )}
           </div>
           
           <div className="mt-4 grid grid-cols-2 gap-2">
             {categoryChartData.map((cat, i) => (
               <div key={i} className="flex items-center gap-2 text-xs">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }}></span>
-                <span className="text-[var(--text-secondary)] font-medium truncate w-16">{cat.name}</span>
+                <span className="text-[var(--text-secondary)] font-medium truncate w-16" title={cat.name}>{cat.name}</span>
                 <span className="font-bold text-[var(--text-primary)] ml-auto">{formatCurrency(cat.value)}</span>
               </div>
             ))}

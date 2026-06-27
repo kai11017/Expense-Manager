@@ -16,7 +16,8 @@ import {
   Moon,
   Sun,
   Settings,
-  Repeat
+  Repeat,
+  HelpCircle
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -28,9 +29,10 @@ export default function Sidebar() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'transactions', label: 'Expenses', icon: Receipt },
     { id: 'portfolio', label: 'Life & Asset Portfolio', icon: Wallet },
-    { id: 'history', label: 'Monthly History', icon: History },
+    { id: 'analysis', label: 'Stock Analysis', icon: Cpu },
+    { id: 'history', label: 'History', icon: History },
     { id: 'news', label: 'Personalized News', icon: Newspaper },
-    { id: 'advisor', label: 'AI Financial Advisor', icon: BrainCircuit },
+    { id: 'advisor', label: 'Finny', icon: BrainCircuit },
   ];
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -115,33 +117,33 @@ export default function Sidebar() {
         
         {/* Profile Popover Menu */}
         {showProfileMenu && !isSidebarCollapsed && (
-          <div className="absolute bottom-[calc(100%+0.5rem)] left-0 w-full bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up z-50">
+          <div className="absolute bottom-[calc(100%+0.5rem)] left-0 w-full bg-[var(--bg-surface)] rounded-xl shadow-xl border border-[var(--border-soft)] overflow-hidden animate-fade-in-up z-50">
             <div className="p-2 space-y-1">
               <button 
-                onClick={() => handleProfileClick('profile')}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-gray-50 rounded-lg font-medium transition-colors"
-              >
-                <UserIcon size={16} className="text-[var(--brand-green)]" />
-                Your Profile
-              </button>
-              <button 
-                onClick={() => setShowProfileMenu(false)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                onClick={() => { setShowProfileMenu(false); logout && logout(); }}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] rounded-lg font-medium transition-colors"
               >
                 <Repeat size={16} className="text-gray-400" />
                 Switch Account
               </button>
               <button 
-                onClick={() => setShowProfileMenu(false)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                onClick={() => handleProfileClick('settings')}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] rounded-lg font-medium transition-colors"
               >
-                <Settings size={16} className="text-gray-400" />
-                Settings
+                <UserIcon size={16} className="text-[var(--brand-green)]" />
+                Your Profile
               </button>
-              <div className="h-px bg-gray-100 my-1"></div>
+              <button 
+                onClick={() => handleProfileClick('support')}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] rounded-lg font-medium transition-colors"
+              >
+                <HelpCircle size={16} className="text-blue-500" />
+                Support
+              </button>
+              <div className="h-px bg-[var(--border-soft)] my-1"></div>
               <button 
                 onClick={() => { setShowProfileMenu(false); logout && logout(); }}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 rounded-lg font-medium transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-rose-500 hover:bg-rose-500/10 rounded-lg font-medium transition-colors"
               >
                 <LogOut size={16} />
                 Log Out

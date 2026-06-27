@@ -10,7 +10,7 @@ export const AppProvider = ({ children }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   
   // UI States
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'auto');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   // Data States
@@ -18,6 +18,7 @@ export const AppProvider = ({ children }) => {
   const [transactions, setTransactions] = useState([]);
   const [portfolio, setPortfolio] = useState(null);
   const [news, setNews] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,8 +27,15 @@ export const AppProvider = ({ children }) => {
     const root = window.document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
-    } else {
+    } else if (theme === 'light') {
       root.classList.remove('dark');
+    } else {
+      // 'auto' mode
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
@@ -243,6 +251,15 @@ export const AppProvider = ({ children }) => {
         setNews(newsData);
       }
 
+      // 5. Budgets
+      const budgRes = await fetch(`${API_BASE_URL}/budgets/`, {
+        headers: getHeaders()
+      });
+      if (budgRes.ok) {
+        const budgData = await budgRes.json();
+        setBudgets(budgData);
+      }
+
     } catch (err) {
       console.error("Error refreshing data:", err);
       setError("Failed to fetch fresh data. Is backend server running?");
@@ -272,6 +289,7 @@ export const AppProvider = ({ children }) => {
       transactions,
       portfolio,
       news,
+      budgets,
       loading,
       error,
       login,

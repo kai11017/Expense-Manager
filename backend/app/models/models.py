@@ -55,6 +55,12 @@ class PortfolioAsset(Base):
     allocation = Column(Float, default=0.0) # calculated or manual
     purchase_date = Column(String, nullable=True) # "YYYY-MM-DD"
     notes = Column(String, nullable=True)
+    
+    # Real-Time Stock Tracking
+    symbol = Column(String, nullable=True)
+    exchange = Column(String, default="NSE")
+    sector = Column(String, default="Equity")
+    currency = Column(String, default="INR")
 
     user = relationship("User", back_populates="assets")
 

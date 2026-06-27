@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import engine, Base
-from app.api import auth, transactions, portfolio, goals, advisor, news
+from app.api import auth, transactions, portfolio, goals, advisor, news, budgets
 from sqlalchemy import text
 
 # Create database tables automatically
@@ -14,6 +14,22 @@ with engine.connect() as conn:
         columns = [row[1] for row in cursor.fetchall()]
         if columns and "reference_id" not in columns:
             conn.execute(text("ALTER TABLE transactions ADD COLUMN reference_id VARCHAR;"))
+            conn.commit()
+            
+        cursor_pa = conn.execute(text("PRAGMA table_info(portfolio_assets)"))
+        columns_pa = [row[1] for row in cursor_pa.fetchall()]
+        if columns_pa:
+            if "symbol" not in columns_pa:
+                conn.execute(text("ALTER TABLE portfolio_assets ADD COLUMN symbol VARCHAR;"))
+            if "exchange" not in columns_pa:
+                conn.execute(text("ALTER TABLE portfolio_assets ADD COLUMN exchange VARCHAR DEFAULT 'NSE';"))
+            if "sector" not in columns_pa:
+                conn.execute(text("ALTER TABLE portfolio_assets ADD COLUMN sector VARCHAR DEFAULT 'Equity';"))
+            if "currency" not in columns_pa:
+                conn.execute(text("ALTER TABLE portfolio_assets ADD COLUMN currency VARCHAR DEFAULT 'INR';"))
+            
+            # Recover missing symbols for pre-existing stocks
+            conn.execute(text("UPDATE portfolio_assets SET symbol = name WHERE type = 'Stock' AND (symbol IS NULL OR symbol = '');"))
             conn.commit()
     except Exception as e:
         print("Migration error:", e)
@@ -40,6 +56,7 @@ app.include_router(portfolio.router, prefix="/api")
 app.include_router(goals.router, prefix="/api")
 app.include_router(advisor.router, prefix="/api")
 app.include_router(news.router, prefix="/api")
+app.include_router(budgets.router, prefix="/api")
 
 @app.get("/")
 def read_root():

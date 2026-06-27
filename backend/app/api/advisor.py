@@ -5,10 +5,10 @@ from collections import defaultdict
 from typing import List, Dict, Any
 from app.database.connection import get_db
 from app.models.models import Transaction, PortfolioAsset, Goal, Budget, AIAdvice, User
-from app.schemas.schemas import DashboardSummary
+from app.schemas.schemas import DashboardSummary, ChatRequest, ChatResponse
 from app.auth.dependencies import get_current_user
 from app.services.prediction_service import get_predictions_and_warnings
-from app.services.ai_service import get_ai_advice
+from app.services.ai_service import get_ai_advice, get_ai_chat_response
 
 router = APIRouter(prefix="/advisor", tags=["advisor"])
 
@@ -201,3 +201,48 @@ def get_monthly_history(
     # Sort by month descending
     sorted_history = sorted(list(history.values()), key=lambda x: x['month'], reverse=True)
     return sorted_history
+
+@router.post("/chat", response_model=ChatResponse)
+def chat_with_advisor(
+    request: ChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Fetch assets to build context
+    assets = db.query(PortfolioAsset).filter(PortfolioAsset.user_id == current_user.id).all()
+    txns = db.query(Transaction).filter(Transaction.user_id == current_user.id).all()
+    
+    # Calculate some basic profile info
+    monthly_spending = 0.0
+    monthly_income = 0.0
+    today = datetime.today()
+    current_month_str = today.strftime("%Y-%m")
+    
+    for t in txns:
+        try:
+            dt = datetime.strptime(t.date, "%Y-%m-%d")
+            m_str = dt.strftime("%Y-%m")
+            if m_str == current_month_str:
+                if t.type == "expense":
+                    monthly_spending += t.amount
+                elif t.type == "income":
+                    monthly_income += t.amount
+        except Exception:
+            continue
+            
+    assets_list = []
+    for a in assets:
+        val = a.current_value * a.quantity
+        assets_list.append({
+            "name": a.name,
+            "type": a.type,
+            "current_value": val
+        })
+
+    profile = {
+        "monthly_income": monthly_income if monthly_income > 0 else 25000.0,
+        "monthly_spending": monthly_spending,
+        "assets": assets_list,
+    }
+    
+    return get_ai_chat_response(profile, request.message)
