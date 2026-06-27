@@ -4,6 +4,7 @@ from app.database.connection import get_db
 from app.models.models import User, OTP
 from app.schemas.schemas import UserCreate, UserLogin, Token, UserOut, OTPRequest, OTPVerify, PasswordReset, GoogleLogin
 from app.auth.security import hash_password, verify_password, create_access_token
+from app.auth.dependencies import get_current_user
 import random
 import datetime
 from google.oauth2 import id_token
@@ -122,7 +123,8 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user_id": user.id,
         "email": user.email,
-        "name": user.name
+        "name": user.name,
+        "has_completed_tour": user.has_completed_tour
     }
 
 @router.post("/google", response_model=Token)
@@ -160,7 +162,15 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
             "token_type": "bearer",
             "user_id": user.id,
             "email": user.email,
-            "name": user.name
+            "name": user.name,
+            "has_completed_tour": user.has_completed_tour
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid Google token: {str(e)}")
+
+@router.post("/complete-tour", status_code=status.HTTP_200_OK)
+def complete_tour(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    current_user.has_completed_tour = True
+    db.add(current_user)
+    db.commit()
+    return {"message": "Tour marked as completed"}

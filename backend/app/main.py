@@ -2,9 +2,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import engine, Base
 from app.api import auth, transactions, portfolio, goals, advisor, news
+from sqlalchemy import text
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
+
+# Database migration to add reference_id if not present
+with engine.connect() as conn:
+    try:
+        cursor = conn.execute(text("PRAGMA table_info(transactions)"))
+        columns = [row[1] for row in cursor.fetchall()]
+        if columns and "reference_id" not in columns:
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN reference_id VARCHAR;"))
+            conn.commit()
+    except Exception as e:
+        print("Migration error:", e)
 
 app = FastAPI(
     title="FinPilot API",

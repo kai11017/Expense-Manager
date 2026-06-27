@@ -17,6 +17,7 @@ class UserLogin(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    has_completed_tour: bool = False
     created_at: datetime.datetime
 
     class Config:
@@ -28,6 +29,7 @@ class Token(BaseModel):
     user_id: int
     email: str
     name: Optional[str]
+    has_completed_tour: bool = False
 
 class TokenData(BaseModel):
     email: Optional[str] = None
@@ -44,6 +46,7 @@ class TransactionBase(BaseModel):
     notes: Optional[str] = None
     is_life_portfolio: Optional[bool] = False
     life_category: Optional[str] = None # "Health", "Learning", "Experiences", "Emergency Fund"
+    reference_id: Optional[str] = None
 
 class TransactionCreate(TransactionBase):
     pass
@@ -58,6 +61,7 @@ class TransactionUpdate(BaseModel):
     notes: Optional[str] = None
     is_life_portfolio: Optional[bool] = None
     life_category: Optional[str] = None
+    reference_id: Optional[str] = None
 
 class TransactionOut(TransactionBase):
     id: int

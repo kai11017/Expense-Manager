@@ -39,8 +39,12 @@ export default function Expenses() {
 
   // Filtering State
   const [filterCategory, setFilterCategory] = useState('All');
-  const [filterType, setFilterType] = useState('expense');
+  const [filterType, setFilterType] = useState('All');
   const [filterLife, setFilterLife] = useState('All');
+
+  // Bulk Deletion State & Actions
+  const [selectedTxnIds, setSelectedTxnIds] = useState([]);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   // Form submission
   const handleSubmit = async (e) => {
@@ -180,6 +184,51 @@ export default function Expenses() {
     return matchesCategory && matchesType && matchesLife;
   });
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allFilteredIds = filteredTransactions.map(t => t.id);
+      setSelectedTxnIds(allFilteredIds);
+    } else {
+      setSelectedTxnIds([]);
+    }
+  };
+
+  const handleSelectRow = (id, checked) => {
+    if (checked) {
+      setSelectedTxnIds(prev => [...prev, id]);
+    } else {
+      setSelectedTxnIds(prev => prev.filter(item => item !== id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      console.log("handleBulkDelete triggered. Selected IDs:", selectedTxnIds);
+      if (selectedTxnIds.length === 0) {
+        console.warn("No transactions selected for bulk delete.");
+        return;
+      }
+      console.log(`Sending POST request to ${API_BASE_URL}/transactions/bulk-delete...`);
+      const response = await fetch(`${API_BASE_URL}/transactions/bulk-delete`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(selectedTxnIds)
+      });
+      console.log("Response status:", response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Bulk delete failed:", errorText);
+        throw new Error('Failed to delete selected transactions.');
+      }
+      console.log("Bulk delete successful. Refreshing data...");
+      setSelectedTxnIds([]);
+      await refreshData();
+    } catch (err) {
+      console.error("Error in handleBulkDelete:", err);
+      alert(err.message);
+    }
+  };
+
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -189,7 +238,7 @@ export default function Expenses() {
   };
 
   return (
-    <div className="flex-1 space-y-6 max-w-7xl mx-auto pb-10">
+    <div id="tour-transactions" className="flex-1 space-y-6 max-w-7xl mx-auto pb-10">
       {/* Header */}
       <div className="animate-fade-in-up">
         <div className="flex items-center gap-2 mb-1">
@@ -430,6 +479,29 @@ export default function Expenses() {
           
           {/* Filters controls */}
           <div className="flex flex-wrap items-center gap-3">
+            {selectedTxnIds.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isConfirmingDelete) {
+                    setIsConfirmingDelete(true);
+                    setTimeout(() => setIsConfirmingDelete(false), 4000);
+                  } else {
+                    handleBulkDelete();
+                    setIsConfirmingDelete(false);
+                  }
+                }}
+                className={`px-3 py-1.5 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-md active:scale-[0.98] transition-all relative z-50 cursor-pointer ${
+                  isConfirmingDelete 
+                    ? 'bg-amber-600 hover:bg-amber-500 animate-pulse' 
+                    : 'bg-rose-600 hover:bg-rose-500'
+                }`}
+              >
+                <Trash2 size={13} />
+                {isConfirmingDelete ? `Confirm Delete (${selectedTxnIds.length})?` : `Delete Selected (${selectedTxnIds.length})`}
+              </button>
+            )}
+
             {/* Category Filter */}
             <div>
               <select
@@ -477,7 +549,15 @@ export default function Expenses() {
           <table className="w-full text-left text-sm text-[var(--text-primary)]">
             <thead className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-muted)] bg-emerald-500/[0.03] border-b border-gray-200">
               <tr>
-                <th className="py-3 px-4 rounded-l-lg font-semibold">Date</th>
+                <th className="py-3 px-4 rounded-l-lg w-10 text-center">
+                  <input
+                    type="checkbox"
+                    checked={filteredTransactions.length > 0 && selectedTxnIds.length === filteredTransactions.length}
+                    onChange={handleSelectAll}
+                    className="rounded bg-gray-900 border-gray-700 text-indigo-600 focus:ring-blue-500/50 w-3.5 h-3.5 cursor-pointer"
+                  />
+                </th>
+                <th className="py-3 px-4 font-semibold">Date</th>
                 <th className="py-3 px-4 font-semibold">Merchant / Source</th>
                 <th className="py-3 px-4 font-semibold">Category</th>
                 <th className="py-3 px-4 font-semibold">Payment</th>
@@ -488,6 +568,14 @@ export default function Expenses() {
             <tbody className="divide-y divide-white/[0.03]">
               {filteredTransactions.map((t) => (
                 <tr key={t.id} className="hover:bg-emerald-500/[0.04] transition-all duration-200 group border-b border-gray-200/50 last:border-0">
+                  <td className="py-3.5 px-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedTxnIds.includes(t.id)}
+                      onChange={(e) => handleSelectRow(t.id, e.target.checked)}
+                      className="rounded bg-gray-900 border-gray-700 text-indigo-600 focus:ring-blue-500/50 w-3.5 h-3.5 cursor-pointer"
+                    />
+                  </td>
                   <td className="py-3.5 px-4 font-mono text-xs">{t.date}</td>
                   <td className="py-3.5 px-4">
                     <div>
@@ -539,7 +627,7 @@ export default function Expenses() {
               ))}
               {filteredTransactions.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="py-10 text-center text-[var(--text-muted)] text-xs">
+                  <td colSpan="7" className="py-10 text-center text-[var(--text-muted)] text-xs">
                     No transactions match your current filters.
                   </td>
                 </tr>

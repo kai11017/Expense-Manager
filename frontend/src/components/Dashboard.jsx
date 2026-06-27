@@ -34,7 +34,7 @@ import {
 } from 'recharts';
 
 export default function Dashboard() {
-  const { dashboardData, loading, setActiveTab } = useApp();
+  const { dashboardData, transactions, portfolio, loading, setActiveTab } = useApp();
 
   if (loading && !dashboardData) {
     return (
@@ -82,41 +82,169 @@ export default function Dashboard() {
     }).format(val || 0);
   };
 
-  // Mock cash flow data for 6 months
-  const cashFlowData = [
-    { month: 'Jan', Income: 80000, Expense: 42000, Savings: 38000 },
-    { month: 'Feb', Income: 82000, Expense: 45000, Savings: 37000 },
-    { month: 'Mar', Income: 85000, Expense: 48000, Savings: 37000 },
-    { month: 'Apr', Income: 88000, Expense: 41000, Savings: 47000 },
-    { month: 'May', Income: 90000, Expense: 52000, Savings: 38000 },
-    { month: 'Jun', Income: monthly_income || 78900, Expense: monthly_spending, Savings: (monthly_income || 78900) - monthly_spending }
-  ];
+  // Determine if it is a new user (no transactions and no assets)
+  const isNewUser = (!transactions || transactions.length === 0) && (!portfolio || !portfolio.assets || portfolio.assets.length === 0);
 
-  const categoryChartData = [
-    { name: 'Food', value: 38, color: '#3B82F6' },
-    { name: 'Shopping', value: 20, color: '#8B5CF6' },
-    { name: 'Transport', value: 15, color: '#F59E0B' },
-    { name: 'Bills', value: 15, color: '#10B981' },
-    { name: 'Health', value: 10, color: '#F43F5E' },
-    { name: 'Others', value: 5, color: '#6B7280' }
-  ];
+  // Dynamic cash flow calculations
+  let cashFlowData = [];
+  if (isNewUser) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    cashFlowData = months.map(m => ({ month: m, Income: 0, Expense: 0, Savings: 0 }));
+  } else {
+    const getLast6Months = () => {
+      const months = [];
+      const date = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+        months.push({
+          label: d.toLocaleString('default', { month: 'short' }),
+          key: d.toISOString().slice(0, 7) // "YYYY-MM"
+        });
+      }
+      return months;
+    };
 
-  const incomeVsExpenseData = [
-    { name: 'Income', value: monthly_income || 78900, color: '#10B981' },
+    const last6Months = getLast6Months();
+    cashFlowData = last6Months.map(m => {
+      const monthTxns = (transactions || []).filter(t => t.date && t.date.startsWith(m.key));
+      const income = monthTxns.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const expense = monthTxns.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      return {
+        month: m.label,
+        Income: income,
+        Expense: expense,
+        Savings: income - expense
+      };
+    });
+  }
+
+  // Dynamic category calculations
+  const currentMonthStr = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const currentMonthExpenses = (transactions || []).filter(t => {
+    return t.type === 'expense' && t.date && t.date.startsWith(currentMonthStr);
+  });
+  
+  const totalExpenseAmount = currentMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+  
+  let categoryChartData = [];
+  if (totalExpenseAmount > 0) {
+    const categoryTotals = {};
+    currentMonthExpenses.forEach(t => {
+      categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+    });
+    
+    const colors = {
+      'Food': '#3B82F6',
+      'Shopping': '#8B5CF6',
+      'Transport': '#F59E0B',
+      'Bills': '#10B981',
+      'Health': '#F43F5E',
+      'Others': '#6B7280'
+    };
+    
+    categoryChartData = Object.keys(categoryTotals).map(cat => {
+      const val = Math.round((categoryTotals[cat] / totalExpenseAmount) * 100);
+      return {
+        name: cat,
+        value: val,
+        color: colors[cat] || `#${Math.floor(Math.abs(Math.sin(cat.charCodeAt(0))) * 16777215).toString(16).padStart(6, '0')}`
+      };
+    });
+  } else {
+    categoryChartData = [
+      { name: 'No Expenses', value: 100, color: '#E5E7EB' }
+    ];
+  }
+
+  const hasIncomeOrExpense = (monthly_income > 0) || (monthly_spending > 0);
+  const incomeVsExpenseData = hasIncomeOrExpense ? [
+    { name: 'Income', value: monthly_income, color: '#10B981' },
     { name: 'Expense', value: monthly_spending, color: '#F43F5E' }
+  ] : [
+    { name: 'No Data', value: 1, color: '#E5E7EB' }
   ];
+
+  // Dynamic Investment calculations
+  const totalFinancialCost = portfolio && portfolio.assets 
+    ? portfolio.assets
+        .filter(a => !["Health", "Learning", "Experiences", "Emergency Fund"].includes(a.type))
+        .reduce((sum, a) => sum + (a.purchase_price * a.quantity), 0)
+    : 0;
+
+  const totalInvestments = portfolio && portfolio.summary 
+    ? (portfolio.summary.total_financial_value || 0) 
+    : 0;
+
+  const overallGain = portfolio && portfolio.summary 
+    ? (portfolio.summary.overall_gain || 0) 
+    : 0;
+
+  const growthRate = totalFinancialCost > 0 
+    ? (overallGain / totalFinancialCost) * 100 
+    : 0;
+
+  // Dynamic budget alerts
+  const defaultBudgets = {
+    'Food': 10000,
+    'Shopping': 5000,
+    'Transport': 3000,
+    'Bills': 15000,
+    'Health': 5000,
+    'Others': 10000
+  };
+
+  const getBudgetAlerts = () => {
+    if (isNewUser) return [];
+
+    const categorySpendingMap = {};
+    currentMonthExpenses.forEach(t => {
+      categorySpendingMap[t.category] = (categorySpendingMap[t.category] || 0) + t.amount;
+    });
+
+    const alerts = [];
+    Object.keys(defaultBudgets).forEach(category => {
+      const spent = categorySpendingMap[category] || 0;
+      const limit = defaultBudgets[category];
+      const pct = limit > 0 ? (spent / limit) * 100 : 0;
+      
+      if (spent > 0) {
+        let status = 'on track';
+        let colorClass = 'bg-emerald-500';
+        if (pct >= 100) {
+          status = 'exceeded';
+          colorClass = 'bg-rose-500';
+        } else if (pct >= 80) {
+          status = 'near limit';
+          colorClass = 'bg-amber-500';
+        }
+        
+        alerts.push({
+          category,
+          spent,
+          limit,
+          pct: Math.min(100, pct),
+          status: `${category} budget ${status}`,
+          colorClass
+        });
+      }
+    });
+
+    return alerts;
+  };
+
+  const activeBudgetAlerts = getBudgetAlerts();
 
   return (
     <div className="flex-1 space-y-6 max-w-7xl mx-auto pb-10">
       
       {/* 5 Top Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in-up">
+      <div id="tour-summary" className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in-up">
         {/* Total Net Worth */}
         <div className="glass-card p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Total Net Worth</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(net_worth)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
-            <TrendingUp size={12} /> 8.6% vs last month
+            <TrendingUp size={12} /> {isNewUser ? '0%' : '8.6%'} vs last month
           </p>
         </div>
 
@@ -125,7 +253,7 @@ export default function Dashboard() {
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Monthly Spending</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(monthly_spending)}</h3>
           <p className="text-xs font-medium text-rose-500 mt-2 flex items-center gap-1">
-            <TrendingDown size={12} /> 12.4% vs last month
+            <TrendingDown size={12} /> {isNewUser ? '0%' : '12.4%'} vs last month
           </p>
         </div>
 
@@ -134,25 +262,27 @@ export default function Dashboard() {
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Available Budget</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(budget_left)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2">
-            40% of {formatCurrency(50000)}
+            {isNewUser ? '0%' : '40%'} of {formatCurrency(isNewUser ? 0 : 50000)}
           </p>
         </div>
 
         {/* Total Investments */}
         <div className="glass-card p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Total Investments</p>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(875000)}</h3>
+          <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(totalInvestments)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
-            <TrendingUp size={12} /> 15.2% Overall
+            <TrendingUp size={12} /> {growthRate.toFixed(1)}% Overall
           </p>
         </div>
 
         {/* Monthly Growth % */}
         <div className="glass-card p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Monthly Growth</p>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)]">+{formatCurrency(18750)}</h3>
+          <h3 className="text-2xl font-bold text-[var(--text-primary)]">
+            {overallGain >= 0 ? '+' : ''}{formatCurrency(overallGain)}
+          </h3>
           <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
-            <TrendingUp size={12} /> 11.2% vs last month
+            <TrendingUp size={12} /> {isNewUser ? '0%' : '11.2%'} vs last month
           </p>
         </div>
       </div>
@@ -186,14 +316,14 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(monthly_income || 78900)}</span>
+              <span className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(monthly_income)}</span>
               <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Income</span>
             </div>
           </div>
           <div className="flex justify-between mt-4">
             <div className="text-center">
               <p className="text-[10px] text-[var(--text-muted)]">Income</p>
-              <p className="text-sm font-bold text-emerald-600">{formatCurrency(monthly_income || 78900)}</p>
+              <p className="text-sm font-bold text-emerald-600">{formatCurrency(monthly_income)}</p>
             </div>
             <div className="text-center">
               <p className="text-[10px] text-[var(--text-muted)]">Expense</p>
@@ -321,42 +451,56 @@ export default function Dashboard() {
         <div className="glass-card p-5">
           <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4 pb-2 border-b border-gray-100">Budget Alerts</h3>
           <div className="space-y-5">
-            <div>
-              <p className="text-xs font-medium text-[var(--text-primary)] mb-1">You have spent 80% of your Food budget</p>
-              <p className="text-[10px] text-[var(--text-muted)] mb-2">₹4,000 of ₹5,000</p>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
-                <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '80%' }}></div>
+            {isNewUser || activeBudgetAlerts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-[var(--text-muted)] gap-2">
+                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                  <Wallet size={16} className="text-gray-400" />
+                </div>
+                <p className="font-semibold">No budget alerts active</p>
+                <p className="scale-95 opacity-80">Tracked categories will appear here once transactions are recorded.</p>
               </div>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-[var(--text-primary)] mb-1">Shopping budget exceeded</p>
-              <p className="text-[10px] text-[var(--text-muted)] mb-2">₹6,000 of ₹5,000</p>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
-                <div className="bg-rose-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-[var(--text-primary)] mb-1">Transport budget on track</p>
-              <p className="text-[10px] text-[var(--text-muted)] mb-2">₹1,200 of ₹2,000</p>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
-                <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '60%' }}></div>
-              </div>
-            </div>
+            ) : (
+              activeBudgetAlerts.map((alert, idx) => (
+                <div key={idx}>
+                  <p className="text-xs font-medium text-[var(--text-primary)] mb-1 uppercase tracking-wide text-[10px]">{alert.status}</p>
+                  <p className="text-[10px] text-[var(--text-muted)] mb-2">{formatCurrency(alert.spent)} of {formatCurrency(alert.limit)}</p>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className={`${alert.colorClass} h-1.5 rounded-full`} style={{ width: `${alert.pct}%` }}></div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* AI Insight */}
-        <div className="glass-card p-5 flex flex-col">
+        <div id="tour-advisor" className="glass-card p-5 flex flex-col">
           <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
             AI Insight <Sparkles size={14} className="text-emerald-500" />
           </h3>
           <div className="flex-1 text-sm text-[var(--text-secondary)] space-y-4 leading-relaxed">
-            <p>You spent 20% more on <strong>Food</strong> compared to last month.</p>
-            <p>Try cooking at home 2 more times this week to save <strong>₹1,500</strong>.</p>
+            {isNewUser ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-[var(--text-muted)] gap-2">
+                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                  <Sparkles size={16} className="text-emerald-500 animate-pulse" />
+                </div>
+                <p className="font-semibold text-emerald-600">Awaiting your data</p>
+                <p className="scale-95 opacity-80">Add transactions or log your assets to generate personalized wealth recommendations.</p>
+              </div>
+            ) : (
+              <div className="whitespace-pre-line text-xs font-medium text-[var(--text-secondary)] leading-relaxed">
+                {ai_advice ? (ai_advice.length > 180 ? `${ai_advice.slice(0, 180)}...` : ai_advice) : "Analyzing your financial behavior... Check back soon for custom tips."}
+              </div>
+            )}
           </div>
-          <button className="mt-auto w-full btn-primary text-xs py-2.5 shadow-none">
-            View Full Insight
-          </button>
+          {!isNewUser && (
+            <button 
+              onClick={() => setActiveTab('advisor')} 
+              className="mt-auto w-full btn-primary text-xs py-2.5 shadow-none"
+            >
+              View Full Insight
+            </button>
+          )}
         </div>
 
       </div>

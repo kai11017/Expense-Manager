@@ -55,7 +55,7 @@ export const AppProvider = ({ children }) => {
         throw new Error(data.detail || 'Login failed');
       }
       setToken(data.access_token);
-      const userProfile = { email: data.email, name: data.name, id: data.user_id };
+      const userProfile = { email: data.email, name: data.name, id: data.user_id, has_completed_tour: data.has_completed_tour };
       setUser(userProfile);
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(userProfile));
@@ -92,9 +92,12 @@ export const AppProvider = ({ children }) => {
   };
 
 
+  const [devOtp, setDevOtp] = useState('');
+
   const requestOtp = async (email, type) => {
     setLoading(true);
     setError(null);
+    setDevOtp('');
     try {
       const response = await fetch(`${API_BASE_URL}/auth/request-otp`, {
         method: 'POST',
@@ -104,7 +107,8 @@ export const AppProvider = ({ children }) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || 'Failed to request OTP');
       if (data.dev_otp) {
-        alert("DEV MODE: Your OTP is " + data.dev_otp);
+        setDevOtp(data.dev_otp);
+        console.log("DEV MODE: Your OTP is " + data.dev_otp);
       }
       return true;
     } catch (err) {
@@ -150,7 +154,7 @@ export const AppProvider = ({ children }) => {
       if (!response.ok) throw new Error(data.detail || 'Google login failed');
       
       setToken(data.access_token);
-      const userProfile = { email: data.email, name: data.name, id: data.user_id };
+      const userProfile = { email: data.email, name: data.name, id: data.user_id, has_completed_tour: data.has_completed_tour };
       setUser(userProfile);
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(userProfile));
@@ -176,6 +180,24 @@ export const AppProvider = ({ children }) => {
     setActiveTab('dashboard');
   };
 
+  // Complete tour handler
+  const completeTour = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/complete-tour`, {
+        method: 'POST',
+        headers: getHeaders()
+      });
+      if (response.ok) {
+        const updatedUser = { ...user, has_completed_tour: true };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (err) {
+      console.error("Error completing tour:", err);
+    }
+  };
+
   // Fetch all user dashboard and list data
   const refreshData = async () => {
     if (!token) return;
@@ -185,6 +207,10 @@ export const AppProvider = ({ children }) => {
       const dashRes = await fetch(`${API_BASE_URL}/advisor/summary`, {
         headers: getHeaders()
       });
+      if (dashRes.status === 401) {
+        logout();
+        return;
+      }
       if (dashRes.ok) {
         const dashData = await dashRes.json();
         setDashboardData(dashData);
@@ -256,7 +282,10 @@ export const AppProvider = ({ children }) => {
       googleLogin,
       refreshData,
       getHeaders,
-      API_BASE_URL
+      completeTour,
+      API_BASE_URL,
+      devOtp,
+      setDevOtp
     }}>
       {children}
     </AppContext.Provider>

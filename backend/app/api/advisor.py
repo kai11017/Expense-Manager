@@ -89,7 +89,7 @@ def get_dashboard_summary(
             "total_value": val
         })
         
-    cash_balance = max(0.0, all_time_income - all_time_expenses)
+    cash_balance = all_time_income - all_time_expenses
     net_worth = financial_value + life_value + cash_balance
     
     overall_gain_pct = 0.0
@@ -98,8 +98,11 @@ def get_dashboard_summary(
         
     # 3. Budget Left
     total_budget_amount = sum(b.amount for b in budgets if b.month == current_month_str)
-    # If no budgets set, defaults to 0.0
-    budget_left = max(0.0, total_budget_amount - monthly_spending) if total_budget_amount > 0 else 0.0
+    if total_budget_amount == 0:
+        # Default budget pool is the monthly income
+        budget_left = monthly_income - monthly_spending
+    else:
+        budget_left = total_budget_amount + monthly_income - monthly_spending
     
     # 4. Predictions & Warnings
     pred_data = get_predictions_and_warnings(txns)

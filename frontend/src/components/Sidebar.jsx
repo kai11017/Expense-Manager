@@ -28,9 +28,9 @@ export default function Sidebar() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'transactions', label: 'Expenses', icon: Receipt },
     { id: 'portfolio', label: 'Life & Asset Portfolio', icon: Wallet },
-    { id: 'advisor', label: 'AI Financial Advisor', icon: BrainCircuit },
     { id: 'history', label: 'Monthly History', icon: History },
     { id: 'news', label: 'Personalized News', icon: Newspaper },
+    { id: 'advisor', label: 'AI Financial Advisor', icon: BrainCircuit },
   ];
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -53,6 +53,7 @@ export default function Sidebar() {
 
   return (
     <aside 
+      id="tour-sidebar"
       className={`bg-[var(--bg-sidebar)] border-r border-[var(--bg-sidebar)] h-[calc(100vh-2rem)] sticky top-4 left-4 flex flex-col justify-between p-5 rounded-2xl shadow-sm transition-all duration-300 z-50 ${
         isSidebarCollapsed ? 'w-[88px]' : 'w-64'
       }`}

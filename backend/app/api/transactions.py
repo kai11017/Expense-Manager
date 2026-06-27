@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database.connection import get_db
@@ -59,7 +59,8 @@ def create_transaction(
         payment_mode=txn_in.payment_mode,
         notes=txn_in.notes,
         is_life_portfolio=is_life,
-        life_category=life_cat
+        life_category=life_cat,
+        reference_id=txn_in.reference_id
     )
     db.add(db_txn)
     db.commit()
@@ -158,6 +159,16 @@ async def upload_statement(
         
     db_txns = []
     for item in parsed_txns:
+        ref_id = item.get("reference_id")
+        if ref_id:
+            # Check if this transaction already exists for this user
+            existing = db.query(Transaction).filter(
+                Transaction.user_id == current_user.id,
+                Transaction.reference_id == ref_id
+            ).first()
+            if existing:
+                continue
+                
         db_txn = Transaction(
             user_id=current_user.id,
             amount=item["amount"],
@@ -168,13 +179,34 @@ async def upload_statement(
             payment_mode=item["payment_mode"],
             notes=item["notes"],
             is_life_portfolio=item["is_life_portfolio"],
-            life_category=item["life_category"]
+            life_category=item["life_category"],
+            reference_id=ref_id
         )
         db.add(db_txn)
         db_txns.append(db_txn)
+        
+    if not db_txns:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="All transactions in this statement have already been imported."
+        )
         
     db.commit()
     for txn in db_txns:
         db.refresh(txn)
         
     return db_txns
+
+
+@router.post("/bulk-delete", status_code=status.HTTP_204_NO_CONTENT)
+def delete_transactions_bulk(
+    ids: List[int] = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db.query(Transaction).filter(
+        Transaction.id.in_(ids),
+        Transaction.user_id == current_user.id
+    ).delete(synchronize_session=False)
+    db.commit()
+    return

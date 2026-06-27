@@ -21,7 +21,7 @@ import {
 } from 'recharts';
 
 export default function History() {
-  const { token, apiUrl } = useApp();
+  const { token, API_BASE_URL } = useApp();
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +37,7 @@ export default function History() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch(`${apiUrl}/api/advisor/history`, {
+      const res = await fetch(`${API_BASE_URL}/advisor/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

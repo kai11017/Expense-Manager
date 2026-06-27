@@ -100,40 +100,39 @@ export default function Landing({ onLoginClick }) {
               <h2 className="font-headline-lg text-headline-lg text-on-surface">Precision instruments for every asset class</h2>
               <p className="text-body-md text-on-surface-variant">From casual SIPs to high-frequency terminal trading, FinPilot provides the infrastructure you need to scale your net worth.</p>
             </div>
-            
-            <div className="bento-grid">
+                        <div className="bento-grid grid grid-cols-12 gap-lg">
               {/* Stocks Card */}
-              <div className="col-span-12 lg:col-span-8 bg-white p-xl rounded-xl soft-shadow border border-outline-variant flex flex-col md:flex-row gap-xl hover-lift">
-                <div className="flex-1 space-y-md">
-                  <div className="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-headline-md">analytics</span>
+              <div className="col-span-12 lg:col-span-8 bg-white p-lg rounded-xl soft-shadow border border-outline-variant flex flex-col md:flex-row gap-lg hover-lift">
+                <div className="flex-1 space-y-sm">
+                  <div className="w-10 h-10 bg-primary-container/10 rounded-lg flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined text-headline-sm">analytics</span>
                   </div>
-                  <h3 className="font-headline-md text-headline-md">Stocks &amp; ETFs</h3>
-                  <p className="text-body-md text-on-surface-variant">Fast, secure trading with real-time analytics. Monitor top intraday performers, access advanced filters like RSI and PE ratios, and manage corporate actions with zero friction.</p>
-                  <ul className="grid grid-cols-2 gap-sm text-body-sm text-on-surface font-medium">
+                  <h3 className="font-headline-sm text-headline-sm">Stocks &amp; ETFs</h3>
+                  <p className="text-body-sm text-on-surface-variant">Fast, secure trading with real-time analytics. Monitor top intraday performers, access advanced filters like RSI and PE ratios, and manage corporate actions with zero friction.</p>
+                  <ul className="grid grid-cols-2 gap-xs text-body-sm text-on-surface font-medium">
                     <li className="flex items-center gap-xs"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> 100% Paperless</li>
                     <li className="flex items-center gap-xs"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> Instant Order Execution</li>
                     <li className="flex items-center gap-xs"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> Real-time P&amp;L</li>
                     <li className="flex items-center gap-xs"><span className="material-symbols-outlined text-primary text-sm">check_circle</span> MTF (4x Leverage)</li>
                   </ul>
-                  <button className="text-primary font-bold flex items-center gap-xs group">
-                    Explore Stocks <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  <button className="text-primary font-bold flex items-center gap-xs group text-sm">
+                    Explore Stocks <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform text-sm">arrow_forward</span>
                   </button>
                 </div>
-                <div className="flex-1 bg-surface-container-low rounded-lg p-md overflow-hidden flex items-end justify-center min-h-[300px]">
-                  <img className="w-4/5 rounded-t-xl shadow-lg transform rotate-2" alt="Mobile UI" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAFNZXFjCasGSPuv2_mHxJOgo_eyX_SNeHl2b3mvFxr9Ai7lHPc9JByRdW0LYu9tzXved84iSavVaQV0Q9g_3WJIf1IyGNyfmTGQwi-vKRLE8Fyvumk9SEpybb7d8Fc1WrPC-Tjvk8mvgUh8LPLppeQMF2DMIHQPVSNKl2rlST_Q-Mp4_g2gcKkPAP9tw7YSbRObAQMFSVeDCjALh092fAqzWOZ6ilthkXDX4ZPXebp_H78YV9jNCMVHdaWoOI-P87Gf1O435iQsU"/>
+                <div className="flex-1 bg-surface-container-low rounded-lg p-sm overflow-hidden flex items-end justify-center min-h-[180px]">
+                  <img className="w-4/5 rounded-t-lg shadow-md transform rotate-2" alt="Mobile UI" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAFNZXFjCasGSPuv2_mHxJOgo_eyX_SNeHl2b3mvFxr9Ai7lHPc9JByRdW0LYu9tzXved84iSavVaQV0Q9g_3WJIf1IyGNyfmTGQwi-vKRLE8Fyvumk9SEpybb7d8Fc1WrPC-Tjvk8mvgUh8LPLppeQMF2DMIHQPVSNKl2rlST_Q-Mp4_g2gcKkPAP9tw7YSbRObAQMFSVeDCjALh092fAqzWOZ6ilthkXDX4ZPXebp_H78YV9jNCMVHdaWoOI-P87Gf1O435iQsU"/>
                 </div>
               </div>
 
               {/* Mutual Funds Card */}
-              <div className="col-span-12 lg:col-span-4 bg-white p-xl rounded-xl soft-shadow border border-outline-variant flex flex-col gap-md hover-lift">
-                <div className="w-12 h-12 bg-secondary-container/10 rounded-lg flex items-center justify-center text-secondary">
-                  <span className="material-symbols-outlined text-headline-md">account_balance_wallet</span>
+              <div className="col-span-12 lg:col-span-4 bg-white p-lg rounded-xl soft-shadow border border-outline-variant flex flex-col gap-sm hover-lift">
+                <div className="w-10 h-10 bg-secondary-container/10 rounded-lg flex items-center justify-center text-secondary">
+                  <span className="material-symbols-outlined text-headline-sm">account_balance_wallet</span>
                 </div>
-                <h3 className="font-headline-md text-headline-md">Mutual Funds</h3>
-                <p className="text-body-md text-on-surface-variant">Build long-term wealth with automated SIPs. Compare 5000+ direct funds with zero commission.</p>
-                <div className="mt-auto py-md border-t border-outline-variant">
-                  <div className="flex justify-between items-center mb-sm">
+                <h3 className="font-headline-sm text-headline-sm">Mutual Funds</h3>
+                <p className="text-body-sm text-on-surface-variant">Build long-term wealth with automated SIPs. Compare 5000+ direct funds with zero commission.</p>
+                <div className="mt-auto py-sm border-t border-outline-variant">
+                  <div className="flex justify-between items-center mb-xs">
                     <span className="text-label-md uppercase text-on-surface-variant">Popular Choice</span>
                     <span className="text-primary font-bold text-sm">+24.5% p.a.</span>
                   </div>
@@ -141,48 +140,48 @@ export default function Landing({ onLoginClick }) {
                     <div className="h-full bg-primary-container w-3/4"></div>
                   </div>
                 </div>
-                <button className="w-full py-md border border-outline-variant rounded-lg font-bold hover:bg-surface-container transition-all">Start an SIP</button>
+                <button className="w-full py-sm border border-outline-variant rounded-lg font-bold hover:bg-surface-container transition-all text-sm mt-xs">Start an SIP</button>
               </div>
 
-              {/* F&O Terminal Card */}
-              <div className="col-span-12 lg:col-span-4 bg-inverse-surface p-xl rounded-xl soft-shadow text-white flex flex-col gap-md hover-lift">
-                <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-primary-fixed">
-                  <span className="material-symbols-outlined text-headline-md">terminal</span>
+              {/* FinOps Terminal Card */}
+              <div className="col-span-12 lg:col-span-4 bg-inverse-surface p-lg rounded-xl soft-shadow text-white flex flex-col gap-sm hover-lift">
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-primary-fixed">
+                  <span className="material-symbols-outlined text-headline-sm">terminal</span>
                 </div>
-                <h3 className="font-headline-md text-headline-md">Groww Terminal</h3>
+                <h3 className="font-headline-sm text-headline-sm">FinOps Terminal</h3>
                 <p className="text-body-sm opacity-80">Advanced charting and customisable layout for professional traders. Analyse chains, view payoffs, and create baskets with scalper mode.</p>
-                <div className="bg-black/20 p-md rounded-lg mt-md">
-                  <div className="flex items-center gap-sm mb-xs">
-                    <div className="w-3 h-3 rounded-full bg-error animate-pulse"></div>
+                <div className="bg-black/20 p-sm rounded-lg mt-xs">
+                  <div className="flex items-center gap-xs mb-xs">
+                    <div className="w-2.5 h-2.5 rounded-full bg-error animate-pulse"></div>
                     <span className="text-label-md opacity-60">NIFTY 50 LIVE</span>
                   </div>
-                  <span className="text-headline-sm font-mono-sm">22,456.80 <span className="text-error text-sm font-normal">-0.45%</span></span>
+                  <span className="text-headline-sm font-mono-sm">22,456.80 <span className="text-error text-xs font-normal">-0.45%</span></span>
                 </div>
-                <button className="mt-auto py-md bg-primary-container text-on-primary-container rounded-lg font-bold hover:brightness-110 transition-all">Open Terminal</button>
+                <button className="mt-auto py-sm bg-primary-container text-on-primary-container rounded-lg font-bold hover:brightness-110 transition-all text-sm">Open Terminal</button>
               </div>
 
               {/* AI & Automation Card */}
-              <div className="col-span-12 lg:col-span-8 bg-white p-xl rounded-xl soft-shadow border border-outline-variant ai-glow flex flex-col md:flex-row items-center gap-xl hover-lift">
-                <div className="flex-1 space-y-md">
+              <div className="col-span-12 lg:col-span-8 bg-white p-lg rounded-xl soft-shadow border border-outline-variant ai-glow flex flex-col md:flex-row items-center gap-lg hover-lift">
+                <div className="flex-1 space-y-sm">
                   <div className="inline-block px-sm py-xs bg-tertiary-container/20 text-tertiary rounded-md text-label-md font-bold mb-xs">AI POWERED</div>
-                  <h3 className="font-headline-md text-headline-md">Intelligent Insights</h3>
-                  <p className="text-body-md text-on-surface-variant">Personalized advisory that understands your risk capacity. Get real-time alerts on market events, dividends, and portfolio rebalancing suggestions powered by FinPilot AI.</p>
-                  <div className="flex gap-md">
-                    <div className="p-sm bg-surface-container rounded-lg flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-tertiary">psychology</span>
+                  <h3 className="font-headline-sm text-headline-sm">Intelligent Insights</h3>
+                  <p className="text-body-sm text-on-surface-variant">Personalized advisory that understands your risk capacity. Get real-time alerts on market events, dividends, and portfolio rebalancing suggestions powered by FinPilot AI.</p>
+                  <div className="flex gap-sm">
+                    <div className="p-xs bg-surface-container rounded-lg flex items-center gap-xs">
+                      <span className="material-symbols-outlined text-tertiary text-sm">psychology</span>
                       <span className="text-label-md text-on-surface">Predictive Trends</span>
                     </div>
-                    <div className="p-sm bg-surface-container rounded-lg flex items-center gap-sm">
-                      <span className="material-symbols-outlined text-tertiary">shield</span>
+                    <div className="p-xs bg-surface-container rounded-lg flex items-center gap-xs">
+                      <span className="material-symbols-outlined text-tertiary text-sm">shield</span>
                       <span className="text-label-md text-on-surface">Risk Mitigation</span>
                     </div>
                   </div>
                 </div>
-                <div className="w-full md:w-1/3 flex justify-center">
-                  <div className="relative w-40 h-40">
+                <div className="w-full md:w-1/3 flex justify-center py-xs">
+                  <div className="relative w-24 h-24">
                     <div className="absolute inset-0 bg-tertiary-container/30 rounded-full animate-ping"></div>
                     <div className="relative z-10 w-full h-full bg-tertiary text-white rounded-full flex items-center justify-center">
-                      <span className="material-symbols-outlined text-4xl" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span>
+                      <span className="material-symbols-outlined text-2xl" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span>
                     </div>
                   </div>
                 </div>

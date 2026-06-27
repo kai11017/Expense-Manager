@@ -11,6 +11,7 @@ class User(Base):
     name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=True)
     auth_provider = Column(String, default="local") # "local" or "google"
+    has_completed_tour = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
@@ -36,6 +37,7 @@ class Transaction(Base):
     # Life Portfolio details
     is_life_portfolio = Column(Boolean, default=False)
     life_category = Column(String, nullable=True) # "Health", "Learning", "Experiences", "Emergency Fund"
+    reference_id = Column(String, nullable=True)
 
     user = relationship("User", back_populates="transactions")
 

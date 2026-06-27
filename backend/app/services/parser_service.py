@@ -54,6 +54,7 @@ def parse_csv_statement(file_content: bytes) -> List[Dict[str, Any]]:
         desc_col = next((c for c in cols if 'merchant' in c or 'desc' in c or 'particular' in c or 'narrative' in c or 'detail' in c or 'payee' in c), None)
         amount_col = next((c for c in cols if 'amount' in c or 'amt' in c or 'value' in c or 'debit' in c or 'credit' in c), None)
         mode_col = next((c for c in cols if 'mode' in c or 'payment' in c or 'type' in c), None)
+        ref_col = next((c for c in cols if 'utr' in c or 'ref' in c or 'txn id' in c or 'transaction id' in c or 'reference' in c), None)
         
         # Fallbacks if columns aren't named standardly
         if not date_col and len(cols) > 0:
@@ -102,6 +103,7 @@ def parse_csv_statement(file_content: bytes) -> List[Dict[str, Any]]:
             
             desc = str(row.get(desc_col, "Unknown Merchant")).strip()
             date_val = parse_date(str(row.get(date_col)))
+            ref_val = str(row.get(ref_col)).strip() if ref_col and not pd.isna(row.get(ref_col)) else None
             
             # Match Category heuristics
             matched_category = "Miscellaneous"
@@ -142,7 +144,8 @@ def parse_csv_statement(file_content: bytes) -> List[Dict[str, Any]]:
                 "payment_mode": mode,
                 "notes": f"Imported transaction: {desc}",
                 "is_life_portfolio": is_life,
-                "life_category": life_cat
+                "life_category": life_cat,
+                "reference_id": ref_val
             })
             
         return parsed_transactions
@@ -161,6 +164,7 @@ def _process_dataframe(df: pd.DataFrame) -> List[Dict[str, Any]]:
     desc_col = next((c for c in cols if 'merchant' in c or 'desc' in c or 'particular' in c or 'narrative' in c or 'detail' in c or 'payee' in c), None)
     amount_col = next((c for c in cols if 'amount' in c or 'amt' in c or 'value' in c or 'debit' in c or 'credit' in c), None)
     mode_col = next((c for c in cols if 'mode' in c or 'payment' in c or 'type' in c), None)
+    ref_col = next((c for c in cols if 'utr' in c or 'ref' in c or 'txn id' in c or 'transaction id' in c or 'reference' in c), None)
     
     # Fallbacks if columns aren't named standardly
     if not date_col and len(cols) > 0:
@@ -209,6 +213,7 @@ def _process_dataframe(df: pd.DataFrame) -> List[Dict[str, Any]]:
         
         desc = str(row.get(desc_col, "Unknown Merchant")).strip()
         date_val = parse_date(str(row.get(date_col)))
+        ref_val = str(row.get(ref_col)).strip() if ref_col and not pd.isna(row.get(ref_col)) else None
         
         # Match Category heuristics
         matched_category = "Miscellaneous"
@@ -249,7 +254,8 @@ def _process_dataframe(df: pd.DataFrame) -> List[Dict[str, Any]]:
             "payment_mode": mode,
             "notes": f"Imported transaction: {desc}",
             "is_life_portfolio": is_life,
-            "life_category": life_cat
+            "life_category": life_cat,
+            "reference_id": ref_val
         })
         
     return parsed_transactions
@@ -320,6 +326,17 @@ def parse_pdf_statement(file_content: bytes) -> List[Dict[str, Any]]:
                     is_life = True
                     life_cat = matched_category
                     
+                # Search for Transaction ID / UTR No. in nearby text (up to 250 characters ahead)
+                subtext = text[match.start():match.start() + 250]
+                txn_id_match = re.search(r'Transaction\s+ID\s+(\S+)', subtext, re.IGNORECASE)
+                utr_match = re.search(r'UTR\s+No\.\s+(\S+)', subtext, re.IGNORECASE)
+                
+                ref_id = None
+                if txn_id_match:
+                    ref_id = txn_id_match.group(1).strip()
+                elif utr_match:
+                    ref_id = utr_match.group(1).strip()
+                    
                 parsed_transactions.append({
                     "amount": amount,
                     "type": txn_type,
@@ -329,7 +346,8 @@ def parse_pdf_statement(file_content: bytes) -> List[Dict[str, Any]]:
                     "payment_mode": "UPI", # Defaulting to UPI for PhonePe statements
                     "notes": f"PDF Import: {action} {merchant}",
                     "is_life_portfolio": is_life,
-                    "life_category": life_cat
+                    "life_category": life_cat,
+                    "reference_id": ref_id
                 })
                 
         return parsed_transactions

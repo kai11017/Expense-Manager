@@ -4,7 +4,7 @@ import { LayoutDashboard, TrendingUp, BarChart3, ShieldCheck, Mail, Lock, User, 
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login({ onBack }) {
-  const { login, register, loading, error, requestOtp, resetPassword, googleLogin } = useApp();
+  const { login, register, loading, error, requestOtp, resetPassword, googleLogin, devOtp } = useApp();
   
   // Modes: 'login', 'register', 'forgot', 'otp-register', 'otp-reset'
   const [mode, setMode] = useState('login');
@@ -237,6 +237,11 @@ export default function Login({ onBack }) {
                     placeholder="000000"
                   />
                 </div>
+                {devOtp && (
+                  <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 text-xs mt-2 font-medium">
+                    DEV OTP: <span className="font-bold font-mono text-sm tracking-wider select-all">{devOtp}</span>
+                  </div>
+                )}
               </div>
             )}
 

@@ -10,6 +10,7 @@ import News from './components/News';
 import Login from './components/Login';
 import Landing from './components/Landing';
 import Profile from './components/Profile';
+import OnboardingTour from './components/OnboardingTour';
 
 export default function App() {
   const { token, activeTab, user } = useApp();
@@ -46,6 +47,9 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen p-4 gap-6">
+      {/* Onboarding Tour */}
+      <OnboardingTour />
+
       {/* Sidebar Navigation */}
       <Sidebar />
 
