@@ -3,11 +3,10 @@ import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
 
-let API_BASE_URL = 'http://127.0.0.1:8000/api';
-if (Capacitor.isNativePlatform()) {
-  // We are using ADB Reverse, so localhost works over the USB cable!
-  API_BASE_URL = 'http://127.0.0.1:8000/api';
-}
+// For physical Android phone via USB: use 127.0.0.1 + adb reverse tcp:8000 tcp:8000
+// For Android Emulator: use 10.0.2.2
+// For Wi-Fi network testing: use the PC's Wi-Fi IP (e.g. 10.190.0.81)
+let API_BASE_URL = 'http://10.190.0.81:8000/api';
 
 export const AppProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');

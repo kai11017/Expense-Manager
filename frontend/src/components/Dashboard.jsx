@@ -558,7 +558,7 @@ export default function Dashboard() {
 }
 
 function ManageBudgetsModal({ onClose, currentBudgetsMap }) {
-  const { refreshData } = useApp();
+  const { refreshData, API_BASE_URL } = useApp();
   const token = localStorage.getItem('token');
   const [loading, setLoading] = React.useState(false);
   const categories = ['Food', 'Shopping', 'Transport', 'Bills', 'Health', 'Others'];
@@ -580,7 +580,7 @@ function ManageBudgetsModal({ onClose, currentBudgetsMap }) {
         const val = parseFloat(budgetValues[cat]);
         if (!isNaN(val) && val > 0) {
           // Save budget
-          await fetch('http://127.0.0.1:8000/api/budgets/', {
+          await fetch(`${API_BASE_URL}/budgets/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

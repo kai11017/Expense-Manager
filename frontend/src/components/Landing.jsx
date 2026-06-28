@@ -4,22 +4,22 @@ export default function Landing({ onLoginClick }) {
   useEffect(() => {
     // Add scroll fade-in effects
     const observerOptions = {
-        threshold: 0.1
+      threshold: 0.1
     };
 
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.remove('opacity-0', 'translate-y-10');
-                entry.target.classList.add('opacity-100', 'translate-y-0');
-            }
-        });
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('opacity-0', 'translate-y-10');
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+        }
+      });
     }, observerOptions);
 
     const elements = document.querySelectorAll('.bento-grid > div, .testimonial-card');
     elements.forEach(el => {
-        el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
-        observer.observe(el);
+      el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+      observer.observe(el);
     });
 
     return () => {
@@ -57,7 +57,7 @@ export default function Landing({ onLoginClick }) {
                 <span className="text-label-md uppercase tracking-wider text-on-surface-variant">India's #1 Investing Platform</span>
               </div>
               <h1 className="font-display-lg text-display-lg text-on-surface leading-tight">
-                Your Financial Universe, <br/><span className="text-primary-container">Simplified.</span>
+                Your Financial Universe, <br /><span className="text-primary-container">Simplified.</span>
               </h1>
               <p className="text-body-lg text-on-surface-variant max-w-xl">
                 Invest in Stocks, Mutual Funds, and Futures with FinPilot—the enterprise-grade OS for your personal wealth. Precision tools for high-growth operators.
@@ -82,10 +82,10 @@ export default function Landing({ onLoginClick }) {
                 </div>
               </div>
             </div>
-            
+
             <div className="relative flex justify-center lg:justify-end">
               <div className="relative animate-bounce-slow">
-                <img alt="FinPilot Isometric Universe" className="w-full max-w-[640px] drop-shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0fE60MOdvm-C_ffhWXqSSTxGmXwCWI0dUkz3rDPaBhs8yZ3Ra-CcSTuS3ouBVsT3NgWikD-396LYewi0cSBKWkUGkd5THQejqyzstz-o3eVfXOAXHiIuIRyF-SwOB4EQ1G6FFS3NeZW8Kjgjd6IuUqwmT4OKfBl126khLME5TbWzZcmMaNi-b07urzPHJAgYHCI6AuVRsc9mSKXYZ6MFntBhl1xn5rwpNn0-ssyJpX3-0ZgTqrOg8twzyfNa5A8AUpJe6xEqK_4I"/>
+                <img alt="FinPilot Isometric Universe" className="w-full max-w-[640px] drop-shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0fE60MOdvm-C_ffhWXqSSTxGmXwCWI0dUkz3rDPaBhs8yZ3Ra-CcSTuS3ouBVsT3NgWikD-396LYewi0cSBKWkUGkd5THQejqyzstz-o3eVfXOAXHiIuIRyF-SwOB4EQ1G6FFS3NeZW8Kjgjd6IuUqwmT4OKfBl126khLME5TbWzZcmMaNi-b07urzPHJAgYHCI6AuVRsc9mSKXYZ6MFntBhl1xn5rwpNn0-ssyJpX3-0ZgTqrOg8twzyfNa5A8AUpJe6xEqK_4I" />
               </div>
               <div className="absolute -top-20 -right-20 w-80 h-80 bg-primary-container/10 rounded-full blur-3xl -z-10"></div>
               <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary-container/10 rounded-full blur-3xl -z-10"></div>
@@ -100,7 +100,7 @@ export default function Landing({ onLoginClick }) {
               <h2 className="font-headline-lg text-headline-lg text-on-surface">Precision instruments for every asset class</h2>
               <p className="text-body-md text-on-surface-variant">From casual SIPs to high-frequency terminal trading, FinPilot provides the infrastructure you need to scale your net worth.</p>
             </div>
-                        <div className="bento-grid grid grid-cols-12 gap-lg">
+            <div className="bento-grid grid grid-cols-12 gap-lg">
               {/* Stocks Card */}
               <div className="col-span-12 lg:col-span-8 bg-white p-lg rounded-xl soft-shadow border border-outline-variant flex flex-col md:flex-row gap-lg hover-lift">
                 <div className="flex-1 space-y-sm">
@@ -120,7 +120,7 @@ export default function Landing({ onLoginClick }) {
                   </button>
                 </div>
                 <div className="flex-1 bg-surface-container-low rounded-lg p-sm overflow-hidden flex items-end justify-center min-h-[180px]">
-                  <img className="w-4/5 rounded-t-lg shadow-md transform rotate-2" alt="Mobile UI" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAFNZXFjCasGSPuv2_mHxJOgo_eyX_SNeHl2b3mvFxr9Ai7lHPc9JByRdW0LYu9tzXved84iSavVaQV0Q9g_3WJIf1IyGNyfmTGQwi-vKRLE8Fyvumk9SEpybb7d8Fc1WrPC-Tjvk8mvgUh8LPLppeQMF2DMIHQPVSNKl2rlST_Q-Mp4_g2gcKkPAP9tw7YSbRObAQMFSVeDCjALh092fAqzWOZ6ilthkXDX4ZPXebp_H78YV9jNCMVHdaWoOI-P87Gf1O435iQsU"/>
+                  <img className="w-4/5 rounded-t-lg shadow-md transform rotate-2" alt="Mobile UI" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAFNZXFjCasGSPuv2_mHxJOgo_eyX_SNeHl2b3mvFxr9Ai7lHPc9JByRdW0LYu9tzXved84iSavVaQV0Q9g_3WJIf1IyGNyfmTGQwi-vKRLE8Fyvumk9SEpybb7d8Fc1WrPC-Tjvk8mvgUh8LPLppeQMF2DMIHQPVSNKl2rlST_Q-Mp4_g2gcKkPAP9tw7YSbRObAQMFSVeDCjALh092fAqzWOZ6ilthkXDX4ZPXebp_H78YV9jNCMVHdaWoOI-P87Gf1O435iQsU" />
                 </div>
               </div>
 
@@ -181,7 +181,7 @@ export default function Landing({ onLoginClick }) {
                   <div className="relative w-24 h-24">
                     <div className="absolute inset-0 bg-tertiary-container/30 rounded-full animate-ping"></div>
                     <div className="relative z-10 w-full h-full bg-tertiary text-white rounded-full flex items-center justify-center">
-                      <span className="material-symbols-outlined text-2xl" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span>
+                      <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
                     </div>
                   </div>
                 </div>
@@ -197,16 +197,16 @@ export default function Landing({ onLoginClick }) {
               <h2 className="font-headline-lg text-headline-lg">Trusted by 2 Crore+ active investors</h2>
               <p className="text-body-md text-on-surface-variant">Real stories from the people building their future on FinPilot.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
               {/* Testimonial 1 */}
               <div className="testimonial-card p-xl bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col gap-md italic text-on-surface-variant hover:bg-surface-container-low transition-colors">
                 <div className="flex gap-xs text-primary-container">
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                 </div>
                 <p className="text-body-md leading-relaxed">"When I came across FinPilot, I found it much easier to understand because of user-friendly design and selection tools. The cherry on top, I got advice that understands my risk capacity."</p>
                 <div className="mt-auto pt-md flex items-center gap-md not-italic">
@@ -221,11 +221,11 @@ export default function Landing({ onLoginClick }) {
               {/* Testimonial 2 */}
               <div className="testimonial-card p-xl bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col gap-md italic text-on-surface-variant hover:bg-surface-container-low transition-colors">
                 <div className="flex gap-xs text-primary-container">
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                 </div>
                 <p className="text-body-md leading-relaxed">"Great platform for investment. Features like creating your own portfolio are great. I started investing in MF due to FinPilot only. Very responsive support team."</p>
                 <div className="mt-auto pt-md flex items-center gap-md not-italic">
@@ -240,11 +240,11 @@ export default function Landing({ onLoginClick }) {
               {/* Testimonial 3 */}
               <div className="testimonial-card p-xl bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col gap-md italic text-on-surface-variant hover:bg-surface-container-low transition-colors">
                 <div className="flex gap-xs text-primary-container">
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                  <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                 </div>
                 <p className="text-body-md leading-relaxed">"Actually, the UI is extremely simple and easy for users to adapt, that's what makes it unique. Many of my referrals have also joined and are enjoying the platform."</p>
                 <div className="mt-auto pt-md flex items-center gap-md not-italic">
@@ -263,18 +263,18 @@ export default function Landing({ onLoginClick }) {
         <section className="py-xxl px-gutter bg-background border-t border-outline-variant overflow-hidden">
           <div className="max-w-container-max mx-auto bg-primary rounded-3xl p-xxl text-white relative flex flex-col lg:flex-row items-center gap-xxl">
             <div className="z-10 lg:w-1/2 space-y-lg">
-              <h2 className="font-display-lg text-display-lg leading-tight">Finance on the go. <br/><span className="opacity-60">Always with you.</span></h2>
+              <h2 className="font-display-lg text-display-lg leading-tight">Finance on the go. <br /><span className="opacity-60">Always with you.</span></h2>
               <p className="text-body-lg opacity-80 max-w-lg">Get the full FinPilot experience on your smartphone. Real-time updates, one-tap trades, and enterprise-grade security wherever you are.</p>
               <div className="flex flex-wrap gap-md pt-md">
                 <a className="flex items-center gap-sm px-xl py-md bg-black rounded-xl border border-white/20 hover:bg-black/80 transition-all" href="#">
-                  <img className="w-8 h-8" alt="App Store" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXfMdSwZERs_MMTI6QQa5QdCAHlqzm8aWKgy5tUZsIK7Uc55x-TOf2dEZ5_s8vW-WH3NFGd6mhov_9sJtqyi5SpcpjOA02B2rMe_w3CigteQzoT8ZL1Ji6-d50yNw5IVPIzsrsZBpX2fVtAYn-LvngjYW9_FuagE32XAMAK55sYXj7TxRnbwQ-TOUwdgPXX7qD4A7yt_OWkIOCy-QLfsEju4rO_XELjusS6cgsXqL23fWasnrhnx7PwaUyDUWrjRUDOizkn9iCB3g"/>
+                  <img className="w-8 h-8" alt="App Store" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXfMdSwZERs_MMTI6QQa5QdCAHlqzm8aWKgy5tUZsIK7Uc55x-TOf2dEZ5_s8vW-WH3NFGd6mhov_9sJtqyi5SpcpjOA02B2rMe_w3CigteQzoT8ZL1Ji6-d50yNw5IVPIzsrsZBpX2fVtAYn-LvngjYW9_FuagE32XAMAK55sYXj7TxRnbwQ-TOUwdgPXX7qD4A7yt_OWkIOCy-QLfsEju4rO_XELjusS6cgsXqL23fWasnrhnx7PwaUyDUWrjRUDOizkn9iCB3g" />
                   <div className="text-left">
                     <p className="text-xs uppercase opacity-60">Download on the</p>
                     <p className="text-lg font-bold">App Store</p>
                   </div>
                 </a>
                 <a className="flex items-center gap-sm px-xl py-md bg-black rounded-xl border border-white/20 hover:bg-black/80 transition-all" href="#">
-                  <img className="w-8 h-8" alt="Google Play" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdmaOdkBp-u0oupI2hCvk0uUZhfo9qKdt5xTKtod7gZ71I47kHwLt7wgvVQKAH4YoiuVJgZxhGLs4UzZ7m4KrLPR2fM1-V83djEGP5z9JGl3UllSnVUmfeBvQlsxWHYPeu2IxMYfF6JMZvtvYLokX6NOUkTL2YG9mfsuEV1Gr8CM4gQpF_cWa2-wCRuMP2L1YjTUxAJnWUiT6iC0fvotRx3XdBKAMh9-t45jCYNoHPuJKTx2vuF9wXO7Fce1en-8mRpCX5XHrFZmo"/>
+                  <img className="w-8 h-8" alt="Google Play" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdmaOdkBp-u0oupI2hCvk0uUZhfo9qKdt5xTKtod7gZ71I47kHwLt7wgvVQKAH4YoiuVJgZxhGLs4UzZ7m4KrLPR2fM1-V83djEGP5z9JGl3UllSnVUmfeBvQlsxWHYPeu2IxMYfF6JMZvtvYLokX6NOUkTL2YG9mfsuEV1Gr8CM4gQpF_cWa2-wCRuMP2L1YjTUxAJnWUiT6iC0fvotRx3XdBKAMh9-t45jCYNoHPuJKTx2vuF9wXO7Fce1en-8mRpCX5XHrFZmo" />
                   <div className="text-left">
                     <p className="text-xs uppercase opacity-60">Get it on</p>
                     <p className="text-lg font-bold">Google Play</p>
@@ -283,9 +283,9 @@ export default function Landing({ onLoginClick }) {
               </div>
             </div>
             <div className="lg:w-1/2 relative flex justify-center lg:justify-end">
-              <img className="w-full max-w-lg drop-shadow-2xl translate-y-20 lg:translate-y-0" alt="Smartphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfZOuGsyi1gtooSuw0CMRHErMAN6dstVuTFb2zH_KNoF6RdYkYMY2OLH-ZkPoNydcMrfq5JUhruTsI64u6pxPgvE3bA1zNhnwqnPXKpA5qT938EtT84rYq4LbFY2YG_f3HtX2eZGwg-8H_mp2LOVi1msROU7aPDNY2KxAlM19nx7u0XO1cTb2ciQw29UrcBO4vfwJyhwTyY3kp6hmAvwNUFOV4wApMY-ycUnJpzKioELKRYWx_G6AM6f5QkSjM609_bZaCyFClq84"/>
+              <img className="w-full max-w-lg drop-shadow-2xl translate-y-20 lg:translate-y-0" alt="Smartphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfZOuGsyi1gtooSuw0CMRHErMAN6dstVuTFb2zH_KNoF6RdYkYMY2OLH-ZkPoNydcMrfq5JUhruTsI64u6pxPgvE3bA1zNhnwqnPXKpA5qT938EtT84rYq4LbFY2YG_f3HtX2eZGwg-8H_mp2LOVi1msROU7aPDNY2KxAlM19nx7u0XO1cTb2ciQw29UrcBO4vfwJyhwTyY3kp6hmAvwNUFOV4wApMY-ycUnJpzKioELKRYWx_G6AM6f5QkSjM609_bZaCyFClq84" />
             </div>
-            
+
             <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
               <svg className="w-full h-full" viewBox="0 0 100 100">
                 <circle cx="90" cy="10" fill="white" r="30"></circle>
@@ -298,7 +298,7 @@ export default function Landing({ onLoginClick }) {
         {/* CTA Final Section */}
         <section className="py-xxl px-gutter text-center space-y-lg">
           <div className="relative w-24 h-24 mx-auto rounded-full bg-primary-container/20 flex items-center justify-center text-primary-container mb-md">
-            <span className="material-symbols-outlined text-4xl" style={{fontVariationSettings: "'FILL' 1"}}>rocket_launch</span>
+            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>rocket_launch</span>
           </div>
           <h2 className="font-headline-lg text-headline-lg">No account opening charges, no barriers.</h2>
           <p className="text-body-lg text-on-surface-variant max-w-xl mx-auto">Join the 2 crore Indians already building wealth. Just Groww with FinPilot OS.</p>

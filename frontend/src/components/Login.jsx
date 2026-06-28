@@ -5,10 +5,10 @@ import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login({ onBack }) {
   const { login, register, loading, error, requestOtp, resetPassword, googleLogin, devOtp } = useApp();
-  
+
   // Modes: 'login', 'register', 'forgot', 'otp-register', 'otp-reset'
   const [mode, setMode] = useState('login');
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +20,7 @@ export default function Login({ onBack }) {
     e.preventDefault();
     setLocalError('');
     setSuccessMsg('');
-    
+
     try {
       if (mode === 'login') {
         const success = await login(email, password);
@@ -83,13 +83,13 @@ export default function Login({ onBack }) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-['Inter']">
-      
+
       {/* LEFT COLUMN: THE FORM */}
       <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center px-5 sm:px-10 lg:px-24 xl:px-32 relative bg-white border-r border-slate-200">
-        
+
         {/* Back Button */}
         {onBack && (
-          <button 
+          <button
             onClick={onBack}
             className="absolute top-8 left-5 sm:left-10 lg:left-24 xl:left-32 text-slate-500 hover:text-slate-900 flex items-center gap-2 font-medium transition-colors"
           >
@@ -98,7 +98,7 @@ export default function Login({ onBack }) {
         )}
 
         <div className="w-full max-w-[400px] mx-auto mt-16 lg:mt-0">
-          
+
           {/* Brand Header */}
           <div className="flex items-center gap-2.5 mb-10">
             <div className="w-10 h-10 bg-[#006C49] rounded-xl flex items-center justify-center shadow-lg shadow-[#006C49]/20">
@@ -161,15 +161,15 @@ export default function Login({ onBack }) {
 
           {/* MAIN FORM */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            
+
             {/* Registration specific fields */}
             {mode === 'register' && (
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700">Full Name</label>
                 <div className="relative">
                   <User className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-2 focus:ring-[#006C49] focus:border-transparent transition-all shadow-sm"
@@ -185,8 +185,8 @@ export default function Login({ onBack }) {
                 <label className="text-sm font-semibold text-slate-700">Email Address</label>
                 <div className="relative">
                   <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-2 focus:ring-[#006C49] focus:border-transparent transition-all shadow-sm"
@@ -204,15 +204,15 @@ export default function Login({ onBack }) {
                     {mode === 'otp-reset' ? 'New Password' : 'Password'}
                   </label>
                   {mode === 'login' && (
-                    <button type="button" onClick={() => {setMode('forgot'); setLocalError(''); setSuccessMsg('');}} className="text-sm font-semibold text-[#006C49] hover:text-[#004e35] transition-colors">
+                    <button type="button" onClick={() => { setMode('forgot'); setLocalError(''); setSuccessMsg(''); }} className="text-sm font-semibold text-[#006C49] hover:text-[#004e35] transition-colors">
                       Forgot password?
                     </button>
                   )}
                 </div>
                 <div className="relative">
                   <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-2 focus:ring-[#006C49] focus:border-transparent transition-all shadow-sm"
@@ -228,8 +228,8 @@ export default function Login({ onBack }) {
                 <label className="text-sm font-semibold text-slate-700">6-Digit OTP</label>
                 <div className="relative">
                   <KeyRound className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     maxLength="6"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
@@ -246,17 +246,17 @@ export default function Login({ onBack }) {
             )}
 
             {/* Submit Button */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className="w-full bg-[#006C49] hover:bg-[#005a3c] text-white font-semibold rounded-xl py-3.5 transition-all shadow-lg shadow-[#006C49]/25 hover:shadow-xl hover:shadow-[#006C49]/30 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? "Processing..." : (
-                mode === 'login' ? "Log In to Workspace" : 
-                mode === 'register' ? "Request Verification Code" : 
-                mode === 'forgot' ? "Send OTP" :
-                mode === 'otp-register' ? "Verify & Create Account" :
-                "Reset Password"
+                mode === 'login' ? "Log In to Workspace" :
+                  mode === 'register' ? "Request Verification Code" :
+                    mode === 'forgot' ? "Send OTP" :
+                      mode === 'otp-register' ? "Verify & Create Account" :
+                        "Reset Password"
               )}
             </button>
           </form>
@@ -265,27 +265,27 @@ export default function Login({ onBack }) {
           <div className="mt-8 text-center">
             {mode === 'login' ? (
               <p className="text-slate-600 font-medium">
-                Don't have an account? <button onClick={() => {setMode('register'); setLocalError(''); setSuccessMsg('');}} className="text-[#006C49] hover:text-[#004e35] font-semibold">Sign up</button>
+                Don't have an account? <button onClick={() => { setMode('register'); setLocalError(''); setSuccessMsg(''); }} className="text-[#006C49] hover:text-[#004e35] font-semibold">Sign up</button>
               </p>
             ) : (
               <p className="text-slate-600 font-medium">
-                Already have an account? <button onClick={() => {setMode('login'); setLocalError(''); setSuccessMsg('');}} className="text-[#006C49] hover:text-[#004e35] font-semibold">Log in</button>
+                Already have an account? <button onClick={() => { setMode('login'); setLocalError(''); setSuccessMsg(''); }} className="text-[#006C49] hover:text-[#004e35] font-semibold">Log in</button>
               </p>
             )}
           </div>
-          
+
         </div>
       </div>
 
       {/* RIGHT COLUMN: VISUALS */}
       <div className="hidden lg:flex w-[55%] xl:w-[60%] relative overflow-hidden bg-gradient-to-br from-[#0B2117] via-[#0D2D20] to-[#081810]">
-        
+
         {/* Background Decorative Elements */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#006C49]/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#10b981]/10 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4"></div>
 
         <div className="relative z-10 w-full flex flex-col items-center justify-center p-12 lg:p-20">
-          
+
           <div className="max-w-xl text-center mb-16">
             <h2 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
               Enterprise-grade wealth management, <span className="text-[#4edea3]">now personal.</span>

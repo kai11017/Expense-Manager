@@ -75,3 +75,42 @@ The database schema is heavily normalized around the central `User` entity.
 - **OTP (`otps`)**
   - **Attributes**: `id`, `email`, `otp_code`, `type` (signup/reset), `expires_at`, `is_used`.
   - **Relations**: Independent table used strictly for authentication workflows.
+
+---
+
+## 📱 Mobile App (Android)
+
+FinPilot provides a native Android experience using the same React codebase, powered by **Capacitor**.
+
+### Prerequisites
+- Android Studio installed on your PC.
+- An Android device (with Developer Options & USB Debugging enabled) or an Android Emulator.
+
+### Build and Run Instructions
+
+1. **Build the Frontend**
+   Navigate to the `frontend` directory and create the production web build:
+   ```bash
+   cd frontend
+   npm run build
+   ```
+
+2. **Sync with Capacitor**
+   Sync the newly built web assets into the native Android project folder:
+   ```bash
+   npx cap sync
+   ```
+
+3. **Open Android Studio**
+   Open the generated Android project directly in Android Studio:
+   ```bash
+   npx cap open android
+   ```
+
+4. **Connect the Backend (For Physical Devices)**
+   If you are testing on a physical phone connected via USB, your phone cannot automatically reach `localhost` or `127.0.0.1` on your PC. To fix this, run the provided helper script:
+   - Double-click the **`Fix-Android-Connection.bat`** script in the main project folder.
+   - *(This script runs `adb reverse tcp:8000 tcp:8000` to tunnel your phone's network traffic directly to your computer's local backend server).*
+
+5. **Deploy the App**
+   In Android Studio, ensure your phone is unlocked and selected in the top toolbar dropdown. Press the **Green Play Button** (Run 'app') to install and launch the FinPilot app on your device.
