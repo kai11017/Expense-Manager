@@ -82,14 +82,14 @@ export default function Sidebar() {
           {/* Logo/Brand Header & Toggle */}
           <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} mb-8 pb-4`}>
             {!isSidebarCollapsed && (
-              <div className="flex items-center space-x-3">
+              <button onClick={() => setActiveTab('dashboard')} className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity text-left">
                 <div className="relative flex items-center justify-center w-10 h-10 bg-[var(--brand-green)] rounded-xl text-white shadow-md">
                   <LayoutDashboard size={18} />
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-white tracking-tight">FinPilot</h1>
                 </div>
-              </div>
+              </button>
             )}
             
             <button 
@@ -203,12 +203,12 @@ export default function Sidebar() {
 
       {/* ===== MOBILE TOP BAR (visible only on mobile) ===== */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[var(--bg-sidebar)] px-4 py-3 flex items-center justify-between shadow-lg safe-top">
-        <div className="flex items-center gap-3">
+        <button onClick={() => setActiveTab('dashboard')} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity text-left">
           <div className="w-8 h-8 bg-[var(--brand-green)] rounded-lg flex items-center justify-center text-white">
             <LayoutDashboard size={16} />
           </div>
           <h1 className="text-base font-bold text-white tracking-tight">FinPilot</h1>
-        </div>
+        </button>
         <button
           onClick={() => setMobileOpen(true)}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -230,12 +230,12 @@ export default function Sidebar() {
           <div className="absolute top-0 right-0 w-72 h-full bg-[var(--bg-sidebar)] p-5 flex flex-col shadow-2xl animate-slide-in-right">
             {/* Drawer header */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
-              <div className="flex items-center gap-3">
+              <button onClick={() => handleNavClick('dashboard')} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity text-left">
                 <div className="w-9 h-9 bg-[var(--brand-green)] rounded-xl flex items-center justify-center text-white shadow-md">
                   <LayoutDashboard size={16} />
                 </div>
                 <h1 className="text-lg font-bold text-white">FinPilot</h1>
-              </div>
+              </button>
               <button
                 onClick={() => setMobileOpen(false)}
                 className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"

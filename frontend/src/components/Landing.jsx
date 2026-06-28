@@ -32,7 +32,7 @@ export default function Landing({ onLoginClick }) {
       {/* Top Navigation Bar */}
       <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-gutter py-md bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant">
         <div className="flex items-center gap-xl">
-          <a className="text-title-lg md:text-headline-md font-bold text-primary tracking-tight whitespace-nowrap" href="#">FinOps Premium</a>
+          <a className="text-headline-lg md:text-display-sm font-bold text-primary tracking-tight whitespace-nowrap" href="/">FinPilot</a>
           <div className="hidden md:flex items-center gap-lg">
             <a className="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Stocks</a>
             <a className="text-on-surface-variant hover:text-primary transition-colors duration-250 font-body-md text-body-md" href="#">Mutual Funds</a>
@@ -42,7 +42,6 @@ export default function Landing({ onLoginClick }) {
           </div>
         </div>
         <div className="flex items-center gap-xs md:gap-md">
-          <button onClick={onLoginClick} className="px-sm py-xs md:px-lg md:py-sm text-primary font-bold hover:bg-surface-container transition-all rounded-lg text-sm md:text-base">Login</button>
           <button onClick={onLoginClick} className="px-sm py-xs md:px-lg md:py-sm bg-primary-container text-on-primary-container font-bold rounded-lg hover:brightness-95 transition-all shadow-sm text-sm md:text-base whitespace-nowrap">Get Started</button>
         </div>
       </nav>
@@ -143,12 +142,12 @@ export default function Landing({ onLoginClick }) {
                 <button className="w-full py-sm border border-outline-variant rounded-lg font-bold hover:bg-surface-container transition-all text-sm mt-xs">Start an SIP</button>
               </div>
 
-              {/* FinOps Terminal Card */}
+              {/* FinPilot Terminal Card */}
               <div className="col-span-12 lg:col-span-4 bg-inverse-surface p-lg rounded-xl soft-shadow text-white flex flex-col gap-sm hover-lift">
                 <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-primary-fixed">
                   <span className="material-symbols-outlined text-headline-sm">terminal</span>
                 </div>
-                <h3 className="font-headline-sm text-headline-sm">FinOps Terminal</h3>
+                <h3 className="font-headline-sm text-headline-sm">FinPilot Terminal</h3>
                 <p className="text-body-sm opacity-80">Advanced charting and customisable layout for professional traders. Analyse chains, view payoffs, and create baskets with scalper mode.</p>
                 <div className="bg-black/20 p-sm rounded-lg mt-xs">
                   <div className="flex items-center gap-xs mb-xs">
@@ -311,7 +310,7 @@ export default function Landing({ onLoginClick }) {
         <div className="max-w-container-max mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-xl mb-xxl">
             <div className="col-span-2 space-y-md">
-              <span className="text-headline-sm font-bold text-on-surface">FinOps Premium</span>
+              <span className="text-headline-sm font-bold text-on-surface">FinPilot</span>
               <p className="text-body-sm text-on-surface-variant">Vaishnavi Tech Park, South Tower, 3rd Floor, Bellandur, Bengaluru – 560103, Karnataka.</p>
               <div className="flex gap-md pt-sm">
                 <a className="text-on-surface-variant hover:text-primary transition-all" href="#"><span className="material-symbols-outlined">share</span></a>
@@ -327,7 +326,7 @@ export default function Landing({ onLoginClick }) {
               <a className="text-body-sm text-on-surface-variant hover:underline" href="#">IPO</a>
             </div>
             <div className="flex flex-col gap-sm">
-              <span className="font-bold text-on-surface">FinOps</span>
+              <span className="font-bold text-on-surface">FinPilot</span>
               <a className="text-body-sm text-on-surface-variant hover:underline" href="#">About Us</a>
               <a className="text-body-sm text-on-surface-variant hover:underline" href="#">Pricing</a>
               <a className="text-body-sm text-on-surface-variant hover:underline" href="#">Blog</a>
@@ -347,7 +346,7 @@ export default function Landing({ onLoginClick }) {
             </div>
           </div>
           <div className="pt-xl border-t border-outline-variant text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-md">
-            <p className="text-body-sm text-on-surface-variant">© 2024 FinOps Premium Financial Services. All rights reserved. SEBI Registration No. INZ000000000.</p>
+            <p className="text-body-sm text-on-surface-variant">© 2024 FinPilot Financial Services. All rights reserved. SEBI Registration No. INZ000000000.</p>
             <div className="flex items-center gap-md">
               <span className="px-sm py-xs bg-surface-container-high rounded border border-outline-variant text-label-md">NSE</span>
               <span className="px-sm py-xs bg-surface-container-high rounded border border-outline-variant text-label-md">BSE</span>
