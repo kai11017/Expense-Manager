@@ -61,6 +61,26 @@ export default function News() {
 
   const tabs = ['All News', 'IT Services', 'Finance', 'Big Tech'];
 
+  const filteredNews = news.filter(item => {
+    if (activeTab === 'All News') return true;
+    
+    const searchText = `${item.title} ${item.summary} ${item.relevant_asset || ''}`.toLowerCase();
+    
+    if (activeTab === 'IT Services') {
+      return ['it', 'tech', 'software', 'service', 'tcs', 'infosys', 'wipro', 'hcl', 'cloud'].some(keyword => searchText.includes(keyword));
+    }
+    
+    if (activeTab === 'Finance') {
+      return ['finance', 'bank', 'fund', 'market', 'gold', 'crypto', 'loan', 'hdfc', 'icici', 'capital', 'nifty'].some(keyword => searchText.includes(keyword));
+    }
+    
+    if (activeTab === 'Big Tech') {
+      return ['ai', 'google', 'apple', 'meta', 'amazon', 'microsoft', 'big tech', 'techcrunch', 'gemini'].some(keyword => searchText.includes(keyword));
+    }
+    
+    return true;
+  });
+
   return (
     <div className="flex-1 space-y-6 max-w-[1440px] mx-auto pb-10 animate-fade-in-up">
       {/* Header & Sector Focus */}
@@ -99,7 +119,7 @@ export default function News() {
             <button className="text-primary font-bold text-sm hover:underline">Mark all read</button>
           </div>
 
-          {news.map((item, index) => {
+          {filteredNews.map((item, index) => {
             const sentiment = getSentiment(index);
             const assetTicker = item.relevant_asset ? item.relevant_asset.substring(0, 4).toUpperCase() : 'MKT';
             
@@ -155,7 +175,7 @@ export default function News() {
             );
           })}
 
-          {news.length === 0 && (
+          {filteredNews.length === 0 && (
             <div className="py-16 glass-card text-center animate-fade-in bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-brand shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-surface-container flex items-center justify-center mx-auto mb-4">
                 <BarChart2 size={24} className="text-on-surface-variant" />
