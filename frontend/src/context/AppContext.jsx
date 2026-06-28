@@ -1,8 +1,13 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+let API_BASE_URL = 'http://127.0.0.1:8000/api';
+if (Capacitor.isNativePlatform()) {
+  // We are using ADB Reverse, so localhost works over the USB cable!
+  API_BASE_URL = 'http://127.0.0.1:8000/api';
+}
 
 export const AppProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');

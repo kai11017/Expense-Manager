@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  ArrowUpRight, 
+import {
+  TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
   Sparkles,
   Heart,
   BookOpen,
@@ -18,7 +18,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, AreaChart, Area, XAx
 export default function Portfolio() {
   const { portfolio, transactions, refreshData, getHeaders, API_BASE_URL } = useApp();
   const [activeTab, setActiveTab] = useState('financial'); // 'financial' or 'life'
-  
+
   const [name, setName] = useState('');
   const [type, setType] = useState('Stock');
   const [purchasePrice, setPurchasePrice] = useState('');
@@ -27,7 +27,7 @@ export default function Portfolio() {
   const [notes, setNotes] = useState('');
   const [symbol, setSymbol] = useState('');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
-  
+
   // Stock Chart Modal State
   const [selectedChartAsset, setSelectedChartAsset] = useState(null);
   const [historyData, setHistoryData] = useState([]);
@@ -82,7 +82,7 @@ export default function Portfolio() {
   // Handle asset creation
   const handleAddAsset = async (e) => {
     e.preventDefault();
-    
+
     // Check validation based on type
     if (type === 'Stock') {
       if (!symbol || !purchasePrice || !quantity) {
@@ -127,7 +127,7 @@ export default function Portfolio() {
       setNotes('');
       setSymbol('');
       setPurchaseDate(new Date().toISOString().split('T')[0]);
-      
+
       await refreshData();
     } catch (err) {
       alert(err.message);
@@ -180,7 +180,7 @@ export default function Portfolio() {
   const financialChartData = financialAssets.map(a => ({
     name: a.name,
     value: a.total_value,
-    color: `#${Math.floor(randomColorSeed(a.name)*16777215).toString(16).padStart(6, '0')}`
+    color: `#${Math.floor(randomColorSeed(a.name) * 16777215).toString(16).padStart(6, '0')}`
   }));
 
   // Deterministic color generation based on string name
@@ -213,7 +213,7 @@ export default function Portfolio() {
           <h2 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Personal Capital Portfolios</h2>
           <p className="text-gray-400 text-sm mt-0.5">Asset allocations covering cash value, stock equity, and human potential.</p>
         </div>
-        
+
         {/* Toggle tabs */}
         <div className="p-1 bg-gray-100 border border-gray-200 rounded-xl flex">
           <button
@@ -221,11 +221,10 @@ export default function Portfolio() {
               setActiveTab('financial');
               setType('Stock');
             }}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
-              activeTab === 'financial'
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${activeTab === 'financial'
                 ? 'bg-emerald-600 text-white shadow-md'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-            }`}
+              }`}
           >
             📈 Financial Assets
           </button>
@@ -234,11 +233,10 @@ export default function Portfolio() {
               setActiveTab('life');
               setType('Health');
             }}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider flex items-center space-x-1.5 ${
-              activeTab === 'life'
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider flex items-center space-x-1.5 ${activeTab === 'life'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-600/10'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-            }`}
+              }`}
           >
             <Sparkles size={12} />
             <span>🌱 Life Portfolio</span>
@@ -297,7 +295,7 @@ export default function Portfolio() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '8px', color: '#F3F4F6' }}
                         formatter={(value) => [formatCurrency(value), '']}
                       />
@@ -542,7 +540,7 @@ export default function Portfolio() {
               <span>Capital is More than Money</span>
             </h3>
             <p className="text-sm text-[var(--text-primary)] mt-2 leading-relaxed">
-              Traditional accounting tags expenses like fitness, courses, books, and trips as "lost capital". 
+              Traditional accounting tags expenses like fitness, courses, books, and trips as "lost capital".
               **FinPilot rewrites this logic.** When you spend money on your physical wellness, knowledge, and mental resilience, you are acquiring structural assets that yield compounding returns over your lifetime. We track these as capital allocations in your **Life Portfolio**.
             </p>
           </div>
@@ -632,7 +630,7 @@ export default function Portfolio() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-soft)', borderRadius: '8px', color: 'var(--text-primary)' }}
                         formatter={(value) => [formatCurrency(value), '']}
                       />
@@ -742,12 +740,12 @@ export default function Portfolio() {
                     <tr key={asset.id} className="hover:bg-[var(--bg-surface-hover)] transition-all">
                       <td className="py-3.5 px-4 font-semibold text-[var(--text-primary)]">{asset.name}</td>
                       <td className="py-3.5 px-4">
-                        <span className="text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider" 
-                              style={{ 
-                                color: lifeColors[asset.type], 
-                                borderColor: `${lifeColors[asset.type]}30`, 
-                                backgroundColor: `${lifeColors[asset.type]}08` 
-                              }}>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider"
+                          style={{
+                            color: lifeColors[asset.type],
+                            borderColor: `${lifeColors[asset.type]}30`,
+                            backgroundColor: `${lifeColors[asset.type]}08`
+                          }}>
                           {asset.type}
                         </span>
                       </td>
@@ -782,24 +780,24 @@ export default function Portfolio() {
       {selectedChartAsset && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-55 animate-fade-in">
           <div className="glass-card max-w-3xl w-full p-6 space-y-6 relative border border-white/10 shadow-2xl">
-            <button 
+            <button
               type="button"
               onClick={() => setSelectedChartAsset(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white text-lg font-bold"
             >
               ✕
             </button>
-            
+
             <div>
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                {selectedChartAsset.name} 
+                {selectedChartAsset.name}
                 <span className="text-xs px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
                   {selectedChartAsset.symbol}
                 </span>
               </h3>
               <p className="text-xs text-gray-400 mt-1">
-                Holding since: <span className="font-semibold text-white">{selectedChartAsset.purchase_date || 'N/A'}</span> • 
-                Avg Cost: <span className="font-semibold text-white">{formatCurrency(selectedChartAsset.purchase_price)}</span> • 
+                Holding since: <span className="font-semibold text-white">{selectedChartAsset.purchase_date || 'N/A'}</span> •
+                Avg Cost: <span className="font-semibold text-white">{formatCurrency(selectedChartAsset.purchase_price)}</span> •
                 Qty: <span className="font-semibold text-white">{selectedChartAsset.quantity}</span>
               </p>
             </div>
@@ -811,11 +809,10 @@ export default function Portfolio() {
                   key={r}
                   type="button"
                   onClick={() => fetchChartData(selectedChartAsset, r)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                    chartRange === r 
-                      ? 'bg-emerald-600 text-white' 
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${chartRange === r
+                      ? 'bg-emerald-600 text-white'
                       : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {r.toUpperCase()}
                 </button>
@@ -833,34 +830,34 @@ export default function Portfolio() {
                   <AreaChart data={historyData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fill: '#9CA3AF', fontSize: 10 }} 
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: '#9CA3AF', fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <YAxis 
+                    <YAxis
                       domain={['auto', 'auto']}
                       tick={{ fill: '#9CA3AF', fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', borderRadius: '8px', color: '#F3F4F6' }}
                       formatter={(value) => [formatCurrency(value), 'Price']}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="price" 
-                      stroke="#10B981" 
+                    <Area
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#10B981"
                       strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorPrice)" 
+                      fillOpacity={1}
+                      fill="url(#colorPrice)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -870,7 +867,7 @@ export default function Portfolio() {
                 </div>
               )}
             </div>
-            
+
             <div className="flex justify-between items-center text-xs text-gray-400 border-t border-white/5 pt-4">
               <div>
                 Current live price: <span className="font-bold text-white">{formatCurrency(selectedChartAsset.current_value)}</span>

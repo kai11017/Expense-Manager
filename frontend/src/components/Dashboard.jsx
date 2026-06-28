@@ -263,20 +263,20 @@ export default function Dashboard() {
     <div className="flex-1 space-y-6 max-w-7xl mx-auto pb-10">
       
       {/* 5 Top Cards */}
-      <div id="tour-summary" className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in-up">
+      <div id="tour-summary" className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 animate-fade-in-up">
         {/* Total Net Worth */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 md:p-5 col-span-2 md:col-span-1">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Total Net Worth</p>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(net_worth)}</h3>
+          <h3 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(net_worth)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
             <TrendingUp size={12} /> Financial & Life Capital
           </p>
         </div>
 
         {/* Monthly Spending */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 md:p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Monthly Spending</p>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(monthly_spending)}</h3>
+          <h3 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(monthly_spending)}</h3>
           <p className={`text-xs font-medium mt-2 flex items-center gap-1 ${spendingChange > 0 ? 'text-rose-500' : 'text-emerald-600'}`}>
             {spendingChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} 
             {isNewUser ? '0%' : `${Math.abs(spendingChange).toFixed(1)}%`} vs last month
@@ -284,25 +284,25 @@ export default function Dashboard() {
         </div>
 
         {/* Available Budget */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 md:p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Available Budget</p>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(budget_left)}</h3>
+          <h3 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(budget_left)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2">
             {isNewUser ? '0%' : `${budgetPct.toFixed(0)}%`} remaining this month
           </p>
         </div>
 
         {/* Total Investments */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 md:p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Total Investments</p>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(totalInvestments)}</h3>
+          <h3 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">{formatCurrency(totalInvestments)}</h3>
           <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
             <TrendingUp size={12} /> {growthRate.toFixed(1)}% Overall
           </p>
         </div>
 
         {/* Monthly Growth % */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 md:p-5">
           <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">Overall Returns</p>
           <h3 className="text-2xl font-bold text-[var(--text-primary)]">
             {overallGain >= 0 ? '+' : ''}{formatCurrency(overallGain)}

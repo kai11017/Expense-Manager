@@ -32,7 +32,7 @@ export default function Landing({ onLoginClick }) {
       {/* Top Navigation Bar */}
       <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-gutter py-md bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant">
         <div className="flex items-center gap-xl">
-          <a className="text-headline-md font-bold text-primary tracking-tight" href="#">FinOps Premium</a>
+          <a className="text-title-lg md:text-headline-md font-bold text-primary tracking-tight whitespace-nowrap" href="#">FinOps Premium</a>
           <div className="hidden md:flex items-center gap-lg">
             <a className="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Stocks</a>
             <a className="text-on-surface-variant hover:text-primary transition-colors duration-250 font-body-md text-body-md" href="#">Mutual Funds</a>
@@ -41,9 +41,9 @@ export default function Landing({ onLoginClick }) {
             <a className="text-on-surface-variant hover:text-primary transition-colors duration-250 font-body-md text-body-md" href="#">Fixed Deposits</a>
           </div>
         </div>
-        <div className="flex items-center gap-md">
-          <button onClick={onLoginClick} className="px-lg py-sm text-primary font-bold hover:bg-surface-container transition-all rounded-lg">Login</button>
-          <button onClick={onLoginClick} className="px-lg py-sm bg-primary-container text-on-primary-container font-bold rounded-lg hover:brightness-95 transition-all shadow-sm">Get Started</button>
+        <div className="flex items-center gap-xs md:gap-md">
+          <button onClick={onLoginClick} className="px-sm py-xs md:px-lg md:py-sm text-primary font-bold hover:bg-surface-container transition-all rounded-lg text-sm md:text-base">Login</button>
+          <button onClick={onLoginClick} className="px-sm py-xs md:px-lg md:py-sm bg-primary-container text-on-primary-container font-bold rounded-lg hover:brightness-95 transition-all shadow-sm text-sm md:text-base whitespace-nowrap">Get Started</button>
         </div>
       </nav>
 

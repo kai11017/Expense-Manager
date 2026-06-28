@@ -113,8 +113,8 @@ export default function AIAdvisor() {
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-3rem)] overflow-hidden pb-4">
       
-      {/* Left Column: Context & Insights */}
-      <div className="w-full lg:w-[380px] flex flex-col gap-6 overflow-y-auto pr-1">
+      {/* Left Column: Context & Insights (Hidden on Mobile) */}
+      <div className="hidden lg:flex w-[380px] flex-col gap-6 overflow-y-auto pr-1">
         
         {/* AI Context Sync Status */}
         <div className="glass-card p-6 border border-outline-variant">

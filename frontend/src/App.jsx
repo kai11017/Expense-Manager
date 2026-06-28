@@ -52,7 +52,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen p-4 gap-6">
+    <div className="flex min-h-screen md:p-4 md:gap-6">
       {/* Onboarding Tour */}
       <OnboardingTour />
 
@@ -60,7 +60,10 @@ export default function App() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto px-2 max-h-[calc(100vh-2rem)]">
+      <main 
+        className="flex-1 overflow-y-auto px-3 md:px-2 pb-24 md:pt-0 md:pb-0 md:max-h-[calc(100vh-2rem)]"
+        style={{ paddingTop: window.innerWidth < 768 ? 'calc(70px + env(safe-area-inset-top))' : '0' }}
+      >
         {renderContent()}
       </main>
     </div>

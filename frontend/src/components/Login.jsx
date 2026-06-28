@@ -85,13 +85,13 @@ export default function Login({ onBack }) {
     <div className="min-h-screen bg-[#F8FAFC] flex font-['Inter']">
       
       {/* LEFT COLUMN: THE FORM */}
-      <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center px-8 sm:px-16 lg:px-24 xl:px-32 relative bg-white border-r border-slate-200">
+      <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center px-5 sm:px-10 lg:px-24 xl:px-32 relative bg-white border-r border-slate-200">
         
         {/* Back Button */}
         {onBack && (
           <button 
             onClick={onBack}
-            className="absolute top-8 left-8 sm:left-16 lg:left-24 xl:left-32 text-slate-500 hover:text-slate-900 flex items-center gap-2 font-medium transition-colors"
+            className="absolute top-8 left-5 sm:left-10 lg:left-24 xl:left-32 text-slate-500 hover:text-slate-900 flex items-center gap-2 font-medium transition-colors"
           >
             <ArrowRight className="w-4 h-4 rotate-180" /> Back to Home
           </button>
