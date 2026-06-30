@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import { useApp } from '../context/AppContext';
 
 export default function Landing({ onLoginClick }) {
+  const { loginAsGuest, loading } = useApp();
   useEffect(() => {
     // Add scroll fade-in effects
     const observerOptions = {
@@ -65,8 +67,8 @@ export default function Landing({ onLoginClick }) {
                 <button onClick={onLoginClick} className="px-xl py-lg bg-primary text-white text-body-lg font-bold rounded-xl hover:shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-sm">
                   Get Started <span className="material-symbols-outlined">trending_up</span>
                 </button>
-                <button className="px-xl py-lg border border-outline-variant text-on-surface text-body-lg font-bold rounded-xl hover:bg-surface-container transition-all flex items-center justify-center gap-sm">
-                  Watch Demo <span className="material-symbols-outlined">play_circle</span>
+                <button onClick={loginAsGuest} disabled={loading} className="px-xl py-lg border border-outline-variant text-on-surface text-body-lg font-bold rounded-xl hover:bg-surface-container transition-all flex items-center justify-center gap-sm disabled:opacity-70 disabled:cursor-not-allowed">
+                  Continue as Guest <span className="material-symbols-outlined">person</span>
                 </button>
               </div>
               <div className="pt-lg flex items-center justify-center lg:justify-start gap-xl opacity-60">

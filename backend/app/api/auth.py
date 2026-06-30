@@ -175,24 +175,51 @@ def firebase_login(payload: FirebaseLogin, db: Session = Depends(get_db)):
         # The audience is the Firebase Project ID
         idinfo = id_token.verify_firebase_token(payload.token, requests.Request(), audience="expense-manager-4d508")
         
+        uid = idinfo.get("user_id") or idinfo.get("sub")
         email = idinfo.get("email")
-        name = idinfo.get("name") or (email.split("@")[0] if email else "User")
+        name = idinfo.get("name") or (email.split("@")[0] if email else "Guest User")
         
-        if not email:
-            raise HTTPException(status_code=400, detail="Firebase token missing email")
+        if not uid:
+            raise HTTPException(status_code=400, detail="Firebase token missing uid")
             
-        user = db.query(User).filter(User.email == email).first()
+        user = db.query(User).filter(User.firebase_uid == uid).first()
         
-        if not user:
-            # Create user if doesn't exist (automatic registration)
-            user = User(
-                email=email,
-                name=name,
-                auth_provider="firebase"
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
+        if user:
+            # Account linking: Update guest email to real email if provided
+            if email and user.email.startswith("guest_") and email != user.email:
+                # Check if email is already used by another account
+                existing_email_user = db.query(User).filter(User.email == email, User.id != user.id).first()
+                if existing_email_user:
+                     raise HTTPException(status_code=400, detail="Email already linked to another account.")
+                user.email = email
+                if idinfo.get("name"):
+                    user.name = idinfo.get("name")
+                db.commit()
+                db.refresh(user)
+        else:
+            # Try finding by email (if they had a local account but now logged in via Firebase)
+            if email:
+                user = db.query(User).filter(User.email == email).first()
+                
+            if user:
+                # Update existing user to include firebase_uid
+                user.firebase_uid = uid
+                db.commit()
+                db.refresh(user)
+            else:
+                # Create user if doesn't exist
+                if not email:
+                    email = f"guest_{uid}@guest.local"
+                    
+                user = User(
+                    email=email,
+                    name=name,
+                    auth_provider="firebase",
+                    firebase_uid=uid
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
             
         token_data = {"email": user.email, "id": user.id}
         token = create_access_token(token_data)

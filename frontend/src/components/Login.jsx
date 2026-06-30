@@ -4,7 +4,7 @@ import { LayoutDashboard, TrendingUp, BarChart3, ShieldCheck, Mail, Lock, User, 
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login({ onBack }) {
-  const { login, register, loading, error, resetPassword, googleLogin } = useApp();
+  const { login, register, loading, error, resetPassword, googleLogin, loginAsGuest } = useApp();
 
   // Modes: 'login', 'register', 'forgot'
   const [mode, setMode] = useState('login');
@@ -63,6 +63,10 @@ export default function Login({ onBack }) {
     setLocalError('Google Login Failed');
   };
 
+  const handleGuestLogin = async () => {
+    await loginAsGuest();
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-['Inter']">
 
@@ -115,6 +119,17 @@ export default function Login({ onBack }) {
                   text="signin_with"
                   shape="rectangular"
                 />
+              </div>
+              <div className="w-full">
+                <button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  disabled={loading}
+                  className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl py-3 flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  <User className="w-5 h-5 text-slate-500" />
+                  Continue as Guest
+                </button>
               </div>
               <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-slate-200"></div>

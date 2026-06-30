@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Edit2, Shield, Network, Sparkles, CheckCircle2, Plus, Sun, Moon, Settings as SettingsIcon } from 'lucide-react';
+import { Edit2, Shield, Network, Sparkles, CheckCircle2, Plus, Sun, Moon, Settings as SettingsIcon, Link as LinkIcon } from 'lucide-react';
 
 export default function Settings() {
-  const { user, theme, setTheme } = useApp();
+  const { user, theme, setTheme, linkAccount } = useApp();
   
   // State for forms and toggles
   const [name, setName] = useState(user?.name || 'Eleanor Vance');
@@ -13,6 +13,13 @@ export default function Settings() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordMessage, setPasswordMessage] = useState('');
+  
+  const isGuest = user?.email?.startsWith('guest_');
+  const [showLinkForm, setShowLinkForm] = useState(false);
+  const [linkEmail, setLinkEmail] = useState('');
+  const [linkPassword, setLinkPassword] = useState('');
+  const [linkMessage, setLinkMessage] = useState('');
+  const [linking, setLinking] = useState(false);
 
   const handleSave = () => {
     // Simulated save action
@@ -107,6 +114,70 @@ export default function Settings() {
               Security & Privacy
             </h3>
             <div className="space-y-lg">
+              {isGuest && (
+                <div className="flex flex-col border-b border-[var(--border-soft)] pb-lg mb-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-label-md text-label-md font-bold text-[var(--text-primary)] flex items-center gap-2">
+                        <LinkIcon size={18} /> Link Account
+                      </h4>
+                      <p className="font-body-sm text-body-sm text-[var(--text-secondary)] mt-xs">Save your data permanently by linking an email and password.</p>
+                    </div>
+                    <button 
+                      onClick={() => setShowLinkForm(!showLinkForm)}
+                      className="border border-[var(--border-soft)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-label-md text-label-md font-bold py-sm px-md rounded-lg transition-all"
+                    >
+                      {showLinkForm ? 'Cancel' : 'Link'}
+                    </button>
+                  </div>
+                  
+                  {showLinkForm && (
+                    <div className="mt-md space-y-sm bg-[var(--bg-surface-hover)] p-sm rounded-lg border border-[var(--border-soft)] animate-fade-in-up">
+                      <input 
+                        type="email" 
+                        placeholder="Email Address"
+                        value={linkEmail}
+                        onChange={(e) => setLinkEmail(e.target.value)}
+                        className="w-full bg-[var(--bg-surface)] border border-[var(--border-soft)] rounded-lg px-md py-sm font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none"
+                      />
+                      <input 
+                        type="password" 
+                        placeholder="Password (min 6 characters)"
+                        value={linkPassword}
+                        onChange={(e) => setLinkPassword(e.target.value)}
+                        className="w-full bg-[var(--bg-surface)] border border-[var(--border-soft)] rounded-lg px-md py-sm font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none"
+                      />
+                      <div className="flex justify-between items-center pt-xs">
+                        <span className={`text-xs font-bold ${linkMessage.includes('successful') ? 'text-primary' : 'text-red-500'}`}>{linkMessage}</span>
+                        <button 
+                          disabled={linking}
+                          onClick={async () => {
+                            if (linkEmail && linkPassword) {
+                              setLinking(true);
+                              setLinkMessage('');
+                              const success = await linkAccount(linkEmail, linkPassword, name);
+                              if (success) {
+                                setLinkMessage('Account linked successfully!');
+                                setTimeout(() => {
+                                  setShowLinkForm(false);
+                                }, 2000);
+                              } else {
+                                setLinkMessage('Failed to link account.');
+                              }
+                              setLinking(false);
+                            } else {
+                              setLinkMessage('Please fill all fields');
+                            }
+                          }}
+                          className="bg-primary hover:brightness-95 text-white font-label-md text-label-md font-bold py-sm px-md rounded-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                          {linking ? 'Linking...' : 'Link Now'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-label-md text-label-md font-bold text-[var(--text-primary)]">Two-Factor Authentication (2FA)</h4>

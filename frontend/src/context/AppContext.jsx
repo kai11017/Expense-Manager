@@ -5,7 +5,10 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   sendPasswordResetEmail, 
-  updateProfile 
+  updateProfile,
+  signInAnonymously,
+  linkWithCredential,
+  EmailAuthProvider
 } from 'firebase/auth';
 
 const AppContext = createContext();
@@ -213,6 +216,84 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const loginAsGuest = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const userCredential = await signInAnonymously(auth);
+      const firebaseUser = userCredential.user;
+      
+      const idToken = await firebaseUser.getIdToken();
+      
+      const response = await fetch(`${API_BASE_URL}/auth/firebase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: idToken })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Guest login failed');
+      }
+      
+      setToken(data.access_token);
+      const userProfile = { email: data.email, name: data.name, id: data.user_id, has_completed_tour: data.has_completed_tour };
+      setUser(userProfile);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(userProfile));
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const linkAccount = async (email, password, name) => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (!auth.currentUser) throw new Error("No user is currently signed in.");
+      
+      const credential = EmailAuthProvider.credential(email, password);
+      await linkWithCredential(auth.currentUser, credential);
+      
+      if (name) {
+         await updateProfile(auth.currentUser, { displayName: name });
+      }
+      
+      // Get new token and refresh backend
+      const idToken = await auth.currentUser.getIdToken(true);
+      const response = await fetch(`${API_BASE_URL}/auth/firebase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: idToken })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Backend linking failed');
+      }
+      
+      setToken(data.access_token);
+      const userProfile = { email: data.email, name: data.name, id: data.user_id, has_completed_tour: data.has_completed_tour };
+      setUser(userProfile);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(userProfile));
+      return true;
+    } catch (err) {
+      let friendlyMsg = err.message;
+      if (err.code === 'auth/email-already-in-use') {
+        friendlyMsg = 'Email is already in use by another account.';
+      }
+      setError(friendlyMsg);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Logout handler
   const logout = () => {
     setToken('');
@@ -336,6 +417,8 @@ export const AppProvider = ({ children }) => {
       requestOtp,
       resetPassword,
       googleLogin,
+      loginAsGuest,
+      linkAccount,
       refreshData,
       getHeaders,
       completeTour,
