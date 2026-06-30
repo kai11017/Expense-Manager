@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.models.models import User, OTP
-from app.schemas.schemas import UserCreate, UserLogin, Token, UserOut, OTPRequest, OTPVerify, PasswordReset, GoogleLogin
+from app.schemas.schemas import UserCreate, UserLogin, Token, UserOut, OTPRequest, OTPVerify, PasswordReset, GoogleLogin, FirebaseLogin
 from app.auth.security import hash_password, verify_password, create_access_token
 from app.auth.dependencies import get_current_user
 import random
@@ -167,6 +167,46 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid Google token: {str(e)}")
+
+@router.post("/firebase", response_model=Token)
+def firebase_login(payload: FirebaseLogin, db: Session = Depends(get_db)):
+    try:
+        # Verify the Firebase ID token using google-auth library
+        # The audience is the Firebase Project ID
+        idinfo = id_token.verify_firebase_token(payload.token, requests.Request(), audience="expense-manager-4d508")
+        
+        email = idinfo.get("email")
+        name = idinfo.get("name") or (email.split("@")[0] if email else "User")
+        
+        if not email:
+            raise HTTPException(status_code=400, detail="Firebase token missing email")
+            
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            # Create user if doesn't exist (automatic registration)
+            user = User(
+                email=email,
+                name=name,
+                auth_provider="firebase"
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            
+        token_data = {"email": user.email, "id": user.id}
+        token = create_access_token(token_data)
+        
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "has_completed_tour": user.has_completed_tour
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid Firebase token: {str(e)}")
 
 @router.post("/complete-tour", status_code=status.HTTP_200_OK)
 def complete_tour(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

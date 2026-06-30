@@ -4,15 +4,15 @@ import { LayoutDashboard, TrendingUp, BarChart3, ShieldCheck, Mail, Lock, User, 
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login({ onBack }) {
-  const { login, register, loading, error, requestOtp, resetPassword, googleLogin, devOtp } = useApp();
+  const { login, register, loading, error, resetPassword, googleLogin } = useApp();
 
-  // Modes: 'login', 'register', 'forgot', 'otp-register', 'otp-reset'
+  // Modes: 'login', 'register', 'forgot'
   const [mode, setMode] = useState('login');
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [localError, setLocalError] = useState('');
 
@@ -23,49 +23,31 @@ export default function Login({ onBack }) {
 
     try {
       if (mode === 'login') {
-        const success = await login(email, password);
+        await login(email, password);
         // App.jsx will automatically route based on token change
       } else if (mode === 'register') {
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !confirmPassword) {
           setLocalError('All fields are required');
           return;
         }
-        const success = await requestOtp(email, 'signup');
+        if (password !== confirmPassword) {
+          setLocalError('Passwords do not match');
+          return;
+        }
+        const success = await register(name, email, password);
         if (success) {
-          setSuccessMsg('OTP sent to your email!');
-          setMode('otp-register');
+          setSuccessMsg('Registration successful!');
         }
       } else if (mode === 'forgot') {
         if (!email) {
           setLocalError('Email is required');
           return;
         }
-        const success = await requestOtp(email, 'reset');
+        const success = await resetPassword(email);
         if (success) {
-          setSuccessMsg('OTP sent to your email!');
-          setMode('otp-reset');
-        }
-      } else if (mode === 'otp-register') {
-        if (!otp) {
-          setLocalError('OTP is required');
-          return;
-        }
-        const success = await register(name, email, password, otp);
-        if (success) {
-          // Log them in immediately after register
-          await login(email, password);
-        }
-      } else if (mode === 'otp-reset') {
-        if (!otp || !password) {
-          setLocalError('OTP and new password are required');
-          return;
-        }
-        const success = await resetPassword(email, otp, password);
-        if (success) {
-          setSuccessMsg('Password reset successfully! Please login.');
+          setSuccessMsg('A password reset link has been sent to your email!');
           setMode('login');
           setPassword('');
-          setOtp('');
         }
       }
     } catch (err) {
@@ -112,14 +94,11 @@ export default function Login({ onBack }) {
               {mode === 'login' && "Welcome back!"}
               {mode === 'register' && "Create an account"}
               {mode === 'forgot' && "Reset your password"}
-              {mode === 'otp-register' && "Verify your email"}
-              {mode === 'otp-reset' && "Enter OTP & New Password"}
             </h1>
             <p className="text-slate-500">
               {mode === 'login' && "Enter your details to access your premium workspace."}
               {mode === 'register' && "Start managing your finances like a pro."}
-              {mode === 'forgot' && "We'll send you an OTP to reset your password."}
-              {(mode === 'otp-register' || mode === 'otp-reset') && "Please check your email for the 6-digit verification code."}
+              {mode === 'forgot' && "We'll send you a password reset link to your email."}
             </p>
           </div>
 
@@ -197,12 +176,10 @@ export default function Login({ onBack }) {
             )}
 
             {/* Password Field */}
-            {(mode === 'login' || mode === 'register' || mode === 'otp-reset') && (
+            {(mode === 'login' || mode === 'register') && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold text-slate-700">
-                    {mode === 'otp-reset' ? 'New Password' : 'Password'}
-                  </label>
+                  <label className="text-sm font-semibold text-slate-700">Password</label>
                   {mode === 'login' && (
                     <button type="button" onClick={() => { setMode('forgot'); setLocalError(''); setSuccessMsg(''); }} className="text-sm font-semibold text-[#006C49] hover:text-[#004e35] transition-colors">
                       Forgot password?
@@ -222,26 +199,20 @@ export default function Login({ onBack }) {
               </div>
             )}
 
-            {/* OTP Field */}
-            {(mode === 'otp-register' || mode === 'otp-reset') && (
+            {/* Confirm Password Field */}
+            {mode === 'register' && (
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">6-Digit OTP</label>
+                <label className="text-sm font-semibold text-slate-700">Confirm Password</label>
                 <div className="relative">
-                  <KeyRound className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
-                    type="text"
-                    maxLength="6"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-2 focus:ring-[#006C49] focus:border-transparent transition-all shadow-sm font-mono tracking-widest text-lg"
-                    placeholder="000000"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-2 focus:ring-[#006C49] focus:border-transparent transition-all shadow-sm"
+                    placeholder="••••••••"
                   />
                 </div>
-                {devOtp && (
-                  <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 text-xs mt-2 font-medium">
-                    DEV OTP: <span className="font-bold font-mono text-sm tracking-wider select-all">{devOtp}</span>
-                  </div>
-                )}
               </div>
             )}
 
@@ -253,10 +224,8 @@ export default function Login({ onBack }) {
             >
               {loading ? "Processing..." : (
                 mode === 'login' ? "Log In to Workspace" :
-                  mode === 'register' ? "Request Verification Code" :
-                    mode === 'forgot' ? "Send OTP" :
-                      mode === 'otp-register' ? "Verify & Create Account" :
-                        "Reset Password"
+                  mode === 'register' ? "Create Account" :
+                    "Send Password Reset Link"
               )}
             </button>
           </form>

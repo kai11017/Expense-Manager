@@ -196,3 +196,6 @@ class PasswordReset(BaseModel):
 
 class GoogleLogin(BaseModel):
     token: str
+
+class FirebaseLogin(BaseModel):
+    token: str

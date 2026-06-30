@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "384285666286",
+    "project_id": "expense-manager-4d508",
+    "storage_bucket": "expense-manager-4d508.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:384285666286:android:c9dc7621d0d0354ac37cff",
+        "android_client_info": {
+          "package_name": "com.finpilot.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqbI-IZwXL1qT5DBWneMF2cuWOmyZ35is"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

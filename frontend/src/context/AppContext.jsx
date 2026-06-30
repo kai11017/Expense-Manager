@@ -1,12 +1,29 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { auth } from '../firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail, 
+  updateProfile 
+} from 'firebase/auth';
 
 const AppContext = createContext();
 
-// For physical Android phone via USB: use 127.0.0.1 + adb reverse tcp:8000 tcp:8000
-// For Android Emulator: use 10.0.2.2
-// For Wi-Fi network testing: use the PC's Wi-Fi IP (e.g. 10.190.0.81)
-let API_BASE_URL = 'http://10.190.0.81:8000/api';
+// Dynamically configure API_BASE_URL based on the environment
+let API_BASE_URL = 'http://localhost:8000/api';
+
+try {
+  if (Capacitor && Capacitor.getPlatform() === 'android') {
+    // We will use localhost + ADB Reverse to bypass Hotspot network isolation
+    API_BASE_URL = 'http://localhost:8000/api'; 
+  } else if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    // If accessing via local network IP (e.g., 192.168.x.x)
+    API_BASE_URL = `http://${window.location.hostname}:8000/api`;
+  }
+} catch (e) {
+  console.log("Capacitor not found, using default URL");
+}
 
 export const AppProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -52,19 +69,27 @@ export const AppProvider = ({ children }) => {
     };
   };
 
-  // Login handler
+  // Login handler using Firebase Auth
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      // 1. Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      // 2. Get Firebase ID token
+      const idToken = await firebaseUser.getIdToken();
+      
+      // 3. Exchange for local access token
+      const response = await fetch(`${API_BASE_URL}/auth/firebase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ token: idToken })
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || 'Login failed');
+        throw new Error(data.detail || 'Backend verification failed');
       }
       setToken(data.access_token);
       const userProfile = { email: data.email, name: data.name, id: data.user_id, has_completed_tour: data.has_completed_tour };
@@ -73,30 +98,60 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userProfile));
       return true;
     } catch (err) {
-      setError(err.message);
+      let friendlyMsg = err.message;
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        friendlyMsg = 'Incorrect email or password';
+      } else if (err.code === 'auth/invalid-email') {
+        friendlyMsg = 'Invalid email address';
+      }
+      setError(friendlyMsg);
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  // Register handler
-  const register = async (name, email, password, otp_code) => {
+  // Register handler using Firebase Auth
+  const register = async (name, email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      // 1. Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      // 2. Update display name in Firebase
+      await updateProfile(firebaseUser, { displayName: name });
+      
+      // 3. Get Firebase ID token
+      const idToken = await firebaseUser.getIdToken();
+      
+      // 4. Register on our backend
+      const response = await fetch(`${API_BASE_URL}/auth/firebase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, otp_code })
+        body: JSON.stringify({ token: idToken })
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || 'Registration failed');
+        throw new Error(data.detail || 'Backend registration failed');
       }
+      setToken(data.access_token);
+      const userProfile = { email: data.email, name: data.name, id: data.user_id, has_completed_tour: data.has_completed_tour };
+      setUser(userProfile);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(userProfile));
       return true;
     } catch (err) {
-      setError(err.message);
+      let friendlyMsg = err.message;
+      if (err.code === 'auth/email-already-in-use') {
+        friendlyMsg = 'Email is already registered';
+      } else if (err.code === 'auth/weak-password') {
+        friendlyMsg = 'Password should be at least 6 characters';
+      } else if (err.code === 'auth/invalid-email') {
+        friendlyMsg = 'Invalid email address';
+      }
+      setError(friendlyMsg);
       return false;
     } finally {
       setLoading(false);
@@ -107,45 +162,24 @@ export const AppProvider = ({ children }) => {
   const [devOtp, setDevOtp] = useState('');
 
   const requestOtp = async (email, type) => {
-    setLoading(true);
-    setError(null);
-    setDevOtp('');
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/request-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, type })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Failed to request OTP');
-      if (data.dev_otp) {
-        setDevOtp(data.dev_otp);
-        console.log("DEV MODE: Your OTP is " + data.dev_otp);
-      }
-      return true;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    } finally {
-      setLoading(false);
-    }
+    return true;
   };
 
 
-  const resetPassword = async (email, otp_code, new_password) => {
+  const resetPassword = async (email) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp_code, new_password })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Failed to reset password');
+      await sendPasswordResetEmail(auth, email);
       return true;
     } catch (err) {
-      setError(err.message);
+      let friendlyMsg = err.message;
+      if (err.code === 'auth/user-not-found') {
+        friendlyMsg = 'No account found with this email';
+      } else if (err.code === 'auth/invalid-email') {
+        friendlyMsg = 'Invalid email address';
+      }
+      setError(friendlyMsg);
       return false;
     } finally {
       setLoading(false);
