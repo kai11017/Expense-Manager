@@ -20,7 +20,9 @@ try {
   if (Capacitor && Capacitor.getPlatform() === 'android') {
     // We will use localhost + ADB Reverse to bypass Hotspot network isolation
     API_BASE_URL = 'http://localhost:8000/api'; 
-  } else if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  } else if (window.location.protocol === 'file:') {
+    API_BASE_URL = 'http://localhost:8000/api';
+  } else if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     // If accessing via local network IP (e.g., 192.168.x.x)
     API_BASE_URL = `http://${window.location.hostname}:8000/api`;
   }
