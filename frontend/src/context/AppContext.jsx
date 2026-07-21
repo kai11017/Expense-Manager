@@ -14,7 +14,7 @@ import {
 const AppContext = createContext();
 
 // Dynamically configure API_BASE_URL based on the environment
-let API_BASE_URL = 'http://localhost:8000/api';
+let API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 try {
   if (Capacitor && Capacitor.getPlatform() === 'android') {
