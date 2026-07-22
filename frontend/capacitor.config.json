@@ -4,6 +4,7 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
+    "url": "https://expense-manager-5aamvkvyd-team-rocket14.vercel.app/",
     "androidScheme": "http",
     "cleartext": true
   },
