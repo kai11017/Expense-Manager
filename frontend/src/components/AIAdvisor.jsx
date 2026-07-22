@@ -98,7 +98,7 @@ export default function AIAdvisor() {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
+        return <strong key={i} className="font-bold text-gray-900 dark:text-gray-100">{part.slice(2, -2)}</strong>;
       }
       return part;
     });
@@ -257,8 +257,8 @@ export default function AIAdvisor() {
                 <div className="flex flex-col gap-1.5">
                   <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user' 
-                      ? 'bg-surface-container-high text-gray-900 rounded-tr-none border border-outline-variant/30 shadow-sm' 
-                      : 'bg-tertiary/5 border border-tertiary/10 text-gray-900 rounded-tl-none'
+                      ? 'bg-surface-container-high text-gray-900 dark:text-gray-100 rounded-tr-none border border-outline-variant/30 shadow-sm' 
+                      : 'bg-tertiary/5 border border-tertiary/10 text-gray-900 dark:text-gray-100 rounded-tl-none'
                   }`}>
                     <p className="whitespace-pre-line">{parseBoldText(msg.content)}</p>
 
@@ -361,7 +361,7 @@ export default function AIAdvisor() {
               onChange={(e) => setQuestion(e.target.value)}
               onInput={handleTextareaInput}
               placeholder="Type your message to Finny..."
-              className="flex-1 bg-transparent border-none focus:ring-0 outline-none focus:outline-none text-sm placeholder:text-on-surface-variant/50 resize-none py-2"
+              className="flex-1 bg-transparent border-none focus:ring-0 outline-none focus:outline-none text-sm text-gray-900 dark:text-gray-100 placeholder:text-on-surface-variant/50 resize-none py-2"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
