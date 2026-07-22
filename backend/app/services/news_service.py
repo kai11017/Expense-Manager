@@ -17,7 +17,7 @@ def get_personalized_news(assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     try:
         api_key = os.getenv("GEMINI_API_KEY", "")
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model = genai.GenerativeModel("gemini-3.6-flash")
         
         asset_names = [a.get("name", "") for a in assets if a.get("name")]
         asset_str = ", ".join(asset_names) if asset_names else "General Market, Indian Equities"

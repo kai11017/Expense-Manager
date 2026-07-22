@@ -109,7 +109,7 @@ def get_ai_advice(profile: Dict[str, Any]) -> str:
         
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model = genai.GenerativeModel("gemini-3.6-flash")
         
         # Prepare context data
         income = profile.get("monthly_income", 0.0)
@@ -172,7 +172,7 @@ def get_ai_chat_response(profile: Dict[str, Any], message: str) -> dict:
 
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model = genai.GenerativeModel("gemini-3.6-flash")
 
         # Prepare context data
         income = profile.get("monthly_income", 0.0)
