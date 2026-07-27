@@ -5,6 +5,8 @@ from app.models.models import User, OTP
 from app.schemas.schemas import UserCreate, UserLogin, Token, UserOut, OTPRequest, OTPVerify, PasswordReset, GoogleLogin, FirebaseLogin
 from app.auth.security import hash_password, verify_password, create_access_token
 from app.auth.dependencies import get_current_user
+from app.core.redis_client import redis_cache
+from app.tasks import send_otp_email_task
 import random
 import datetime
 from google.oauth2 import id_token
@@ -19,6 +21,9 @@ def generate_otp():
 
 @router.post("/request-otp", status_code=status.HTTP_200_OK)
 def request_otp(payload: OTPRequest, db: Session = Depends(get_db)):
+    if not redis_cache.is_connected:
+        raise HTTPException(status_code=503, detail="OTP service is currently unavailable. Please try again later.")
+
     if payload.type == "signup":
         user = db.query(User).filter(User.email == payload.email).first()
         if user:
@@ -29,34 +34,29 @@ def request_otp(payload: OTPRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="User not found")
             
     otp_code = generate_otp()
-    expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    redis_key = f"otp:{payload.type}:{payload.email}"
     
-    new_otp = OTP(
-        email=payload.email,
-        otp_code=otp_code,
-        type=payload.type,
-        expires_at=expires_at
-    )
-    db.add(new_otp)
-    db.commit()
+    # Store in Redis with 10 minute (600 seconds) expiration
+    success = redis_cache.set(redis_key, otp_code, ttl_seconds=600)
     
-    # In a real app, send email here. For now, we print to console.
-    print(f"\n\n====== OTP REQUEST ======\nEmail: {payload.email}\nType: {payload.type}\nOTP Code: {otp_code}\n=========================\n\n")
+    if not success:
+        raise HTTPException(status_code=503, detail="Failed to generate OTP")
+        
+    # Dispatch email sending to Celery worker in the background
+    send_otp_email_task.delay(payload.email, otp_code, payload.type)
     
     return {"message": "OTP sent successfully", "dev_otp": otp_code}
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    # 1. Verify OTP
-    otp_record = db.query(OTP).filter(
-        OTP.email == user_in.email,
-        OTP.otp_code == user_in.otp_code,
-        OTP.type == "signup",
-        OTP.is_used == False,
-        OTP.expires_at > datetime.datetime.utcnow()
-    ).order_by(OTP.id.desc()).first()
+    if not redis_cache.is_connected:
+        raise HTTPException(status_code=503, detail="Registration service is currently unavailable.")
+
+    # 1. Verify OTP from Redis
+    redis_key = f"otp:signup:{user_in.email}"
+    stored_otp = redis_cache.get(redis_key)
     
-    if not otp_record:
+    if not stored_otp or stored_otp != user_in.otp_code:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
         
     db_user = db.query(User).filter(User.email == user_in.email).first()
@@ -75,8 +75,8 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     )
     db.add(new_user)
     
-    otp_record.is_used = True
-    db.add(otp_record)
+    # Invalidate OTP to prevent reuse
+    redis_cache.delete(redis_key)
     
     db.commit()
     db.refresh(new_user)
@@ -84,15 +84,13 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
 def reset_password(payload: PasswordReset, db: Session = Depends(get_db)):
-    otp_record = db.query(OTP).filter(
-        OTP.email == payload.email,
-        OTP.otp_code == payload.otp_code,
-        OTP.type == "reset",
-        OTP.is_used == False,
-        OTP.expires_at > datetime.datetime.utcnow()
-    ).order_by(OTP.id.desc()).first()
+    if not redis_cache.is_connected:
+        raise HTTPException(status_code=503, detail="Password reset service is currently unavailable.")
+
+    redis_key = f"otp:reset:{payload.email}"
+    stored_otp = redis_cache.get(redis_key)
     
-    if not otp_record:
+    if not stored_otp or stored_otp != payload.otp_code:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
         
     user = db.query(User).filter(User.email == payload.email).first()
@@ -102,8 +100,8 @@ def reset_password(payload: PasswordReset, db: Session = Depends(get_db)):
     user.hashed_password = hash_password(payload.new_password)
     db.add(user)
     
-    otp_record.is_used = True
-    db.add(otp_record)
+    # Invalidate OTP
+    redis_cache.delete(redis_key)
     
     db.commit()
     return {"message": "Password reset successfully"}

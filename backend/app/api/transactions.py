@@ -6,6 +6,7 @@ from app.models.models import Transaction, User
 from app.schemas.schemas import TransactionCreate, TransactionUpdate, TransactionOut
 from app.auth.dependencies import get_current_user
 from app.services.parser_service import parse_csv_statement, parse_excel_statement, parse_pdf_statement
+from app.core.redis_client import redis_cache
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -65,6 +66,7 @@ def create_transaction(
     db.add(db_txn)
     db.commit()
     db.refresh(db_txn)
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return db_txn
 
 
@@ -101,6 +103,7 @@ def update_transaction(
             
     db.commit()
     db.refresh(db_txn)
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return db_txn
 
 
@@ -123,6 +126,7 @@ def delete_transaction(
         
     db.delete(db_txn)
     db.commit()
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return
 
 
@@ -195,6 +199,7 @@ async def upload_statement(
     for txn in db_txns:
         db.refresh(txn)
         
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return db_txns
 
 
@@ -209,4 +214,5 @@ def delete_transactions_bulk(
         Transaction.user_id == current_user.id
     ).delete(synchronize_session=False)
     db.commit()
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return

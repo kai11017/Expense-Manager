@@ -2,8 +2,10 @@ from typing import List, Dict, Any
 import random
 import json
 import os
+import hashlib
 from datetime import datetime, timedelta
 import google.generativeai as genai
+from app.core.redis_client import redis_cache
 
 def get_personalized_news(assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
@@ -13,14 +15,21 @@ def get_personalized_news(assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     today = datetime.today()
     news_items = []
     
+    # Sort names so the cache key is consistent regardless of order
+    asset_names = sorted([a.get("name", "") for a in assets if a.get("name")])
+    asset_str = ", ".join(asset_names) if asset_names else "General Market, Indian Equities"
+    
+    # Check cache first
+    cache_key = "news:ai:" + hashlib.md5(asset_str.encode()).hexdigest()
+    cached_news = redis_cache.get(cache_key)
+    if cached_news:
+        return cached_news
+
     # Try AI generation first
     try:
         api_key = os.getenv("GEMINI_API_KEY", "")
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-3.6-flash")
-        
-        asset_names = [a.get("name", "") for a in assets if a.get("name")]
-        asset_str = ", ".join(asset_names) if asset_names else "General Market, Indian Equities"
         
         prompt = f"""
         You are a top financial news aggregator. The user has the following assets in their portfolio: {asset_str}.
@@ -50,6 +59,8 @@ def get_personalized_news(assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         ai_news = json.loads(response_text.strip())
         
         if isinstance(ai_news, list) and len(ai_news) > 0:
+            # Cache for 24 hours (86400 seconds)
+            redis_cache.set(cache_key, ai_news, ttl_seconds=86400)
             return ai_news
     except Exception as e:
         print(f"Failed to generate AI news: {e}")

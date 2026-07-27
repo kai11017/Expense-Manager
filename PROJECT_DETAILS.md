@@ -2,24 +2,20 @@
 
 ## 🛠️ Tools & Technologies Used
 
-### Frontend
-- **React 19**: Core UI library for building the user interface.
-- **Vite**: Ultra-fast build tool and development server.
-- **Tailwind CSS**: Utility-first CSS framework for rapid and responsive UI styling.
-- **Recharts**: Charting library used for rendering financial data visualizations and portfolio allocations.
-- **Lucide React**: Vector icon library for modern UI iconography.
-- **React Joyride**: Library for creating guided user tours (onboarding).
-- **Google OAuth & JWT Decode**: Used for handling user authentication via Google and decoding JSON Web Tokens.
-
-### Backend
-- **FastAPI**: High-performance Python web framework for building the RESTful API.
-- **Uvicorn**: ASGI web server used to run the FastAPI application.
-- **SQLAlchemy**: SQL toolkit and Object-Relational Mapper (ORM) for interacting with the database.
-- **SQLite**: Local relational database used for data persistence.
-- **Pydantic**: Used for strict data validation, serialization, and deserialization using Python type annotations.
-- **Google Generative AI (Gemini API)**: Powers the AI Advisor and personalized news generation by analyzing the user's financial profile.
-- **Pandas & NumPy**: Utilized for robust data manipulation and analytical calculations.
-- **Pdfplumber & Openpyxl**: Tools for parsing and extracting data from bank statements (PDFs and Excel files).
+| Category | Technologies | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 19, Vite, Tailwind CSS | Core UI library, ultra-fast build tool, and utility-first styling. |
+| **Frontend Extras**| Recharts, Lucide React, React Joyride | Data visualization (charts), iconography, and guided user onboarding. |
+| **Backend** | FastAPI, Uvicorn, Pydantic | High-performance Python API framework, ASGI server, and strict data validation. |
+| **Database** | PostgreSQL, SQLAlchemy, Alembic | High-performance relational database, SQL ORM, and automated schema migrations. |
+| **Task Queue & Caching**| Celery, Azure Cache for Redis | Background task processing (e.g., sending OTPs) and high-speed data caching. |
+| **AI / Intelligence**| Google Generative AI (Gemini API) | Powers the AI Advisor and personalized news generation based on user profiles. |
+| **Data Processing** | Pandas, NumPy, Pdfplumber, Openpyxl| Robust data manipulation, analytical calculations, and parsing bank statements (PDFs/Excel). |
+| **Authentication** | Google OAuth, JWT Decode | Secure user authentication via Google and JSON Web Token handling. |
+| **Mobile App** | Capacitor | Wraps the web application to provide a native Android experience. |
+| **CI/CD Pipeline** | GitHub Actions | Automated workflow for building and deploying the backend to production. |
+| **Containerization**| Docker, Docker Compose | Containerized architecture for seamless local development and unified deployments. |
+| **Hosting** | Azure Web Apps | Cloud hosting platform used for the production Python backend. |
 
 ---
 
@@ -29,7 +25,7 @@
    - Users can authenticate using a standard Email/Password combination or via Google OAuth.
    - The backend validates the credentials and returns a secure JWT (JSON Web Token).
    - The frontend stores this token and attaches it as a Bearer token in the header of subsequent API requests.
-   - OTP verification is integrated for new user signups and password resets.
+   - OTP verification is integrated for new user signups and password resets. OTP emails are simulated asynchronously via the **Celery Task Queue**, and OTPs are cached in **Azure Redis** for extremely fast validation.
 
 2. **State Management & API Communication**
    - The frontend relies on React Context (`AppContext.jsx`) for global state management.
@@ -73,8 +69,7 @@ The database schema is heavily normalized around the central `User` entity.
   - **Relations**: Belongs to `User` via `user_id`.
 
 - **OTP (`otps`)**
-  - **Attributes**: `id`, `email`, `otp_code`, `type` (signup/reset), `expires_at`, `is_used`.
-  - **Relations**: Independent table used strictly for authentication workflows.
+  - **Note**: The original OTP table is now heavily supplemented by **Azure Redis**. Fast, ephemeral OTP validation occurs in Redis rather than hitting the primary PostgreSQL database constantly.
 
 ---
 

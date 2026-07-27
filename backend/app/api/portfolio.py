@@ -7,6 +7,7 @@ from app.database.connection import get_db
 from app.models.models import PortfolioAsset, User
 from app.schemas.schemas import AssetCreate, AssetUpdate, AssetOut
 from app.auth.dependencies import get_current_user
+from app.core.redis_client import redis_cache
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
@@ -49,6 +50,11 @@ def get_portfolio(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    cache_key = f"user:{current_user.id}:portfolio"
+    cached_data = redis_cache.get(cache_key)
+    if cached_data:
+        return cached_data
+
     assets = db.query(PortfolioAsset).filter(PortfolioAsset.user_id == current_user.id).all()
     
     # 1. Fetch live stock quotes and update records
@@ -118,7 +124,7 @@ def get_portfolio(
             "total_value": val
         })
         
-    return {
+    result = {
         "assets": assets_out,
         "summary": {
             "total_financial_value": total_financial_value,
@@ -128,6 +134,9 @@ def get_portfolio(
             "life_investments": sum(a["total_value"] for a in assets_out if a["type"] in life_types)
         }
     }
+    
+    redis_cache.set(cache_key, result, ttl_seconds=300)
+    return result
 
 
 @router.post("/", response_model=AssetOut, status_code=status.HTTP_201_CREATED)
@@ -165,6 +174,7 @@ def create_asset(
     db.add(db_asset)
     db.commit()
     db.refresh(db_asset)
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return db_asset
 
 
@@ -200,6 +210,7 @@ def update_asset(
         
     db.commit()
     db.refresh(db_asset)
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return db_asset
 
 
@@ -222,6 +233,7 @@ def delete_asset(
         
     db.delete(db_asset)
     db.commit()
+    redis_cache.delete_pattern(f"user:{current_user.id}:*")
     return
 
 

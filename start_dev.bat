@@ -14,6 +14,9 @@ if %errorlevel% neq 0 (
 )
 echo.
 
-echo [2/2] Starting Backend Server...
-cd backend
-..\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+echo [2/2] Starting Backend Services via Docker...
+docker-compose up -d --build
+
+echo.
+echo [SUCCESS] Backend, PostgreSQL, and Redis are running!
+echo View backend logs using: docker logs -f finpilot-backend
