@@ -1,4 +1,0 @@
-- [x] Verification & Demo Seeding
-  - [x] Write seed script with 6 months of historical data
-  - [x] Verify frontend-backend integration
-  - [x] Document final walkthrough
