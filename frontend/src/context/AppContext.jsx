@@ -57,10 +57,10 @@ export const AppProvider = ({ children }) => {
       root.classList.remove('dark');
     } else {
       // 'auto' mode
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        root.classList.add('dark');
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        root.classList.add('light');
       } else {
-        root.classList.remove('dark');
+        root.classList.remove('light');
       }
     }
     localStorage.setItem('theme', theme);
