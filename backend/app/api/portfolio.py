@@ -11,37 +11,50 @@ from app.core.redis_client import redis_cache
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
+def get_candidate_tickers(symbol: str, exchange: str = "NSE") -> list[str]:
+    raw = symbol.upper().strip()
+    if raw.endswith(".NS") or raw.endswith(".BO"):
+        return [raw]
+    
+    if exchange.upper() == "NSE":
+        return [f"{raw}.NS", raw, f"{raw}.BO"]
+    elif exchange.upper() == "BSE":
+        return [f"{raw}.BO", raw, f"{raw}.NS"]
+    elif exchange.upper() in ["US", "NASDAQ", "NYSE"]:
+        return [raw, f"{raw}.NS", f"{raw}.BO"]
+    else:
+        return [f"{raw}.NS", raw, f"{raw}.BO"]
+
+
 def fetch_live_quote(symbol: str, exchange: str = "NSE") -> Tuple[Optional[float], Optional[str]]:
     """
     Fetches the current live price and full company name from Yahoo Finance chart API.
+    Tries primary exchange (.NS) and falls back to US/Global ticker (e.g., MSFT, AAPL) or BSE (.BO).
     Returns (current_price, company_name).
     """
     if not symbol:
         return None, None
         
-    ticker = symbol.upper().strip()
-    # Default format for NSE: RELIANCE -> RELIANCE.NS
-    if exchange.upper() == "NSE" and not (ticker.endswith(".NS") or ticker.endswith(".BO")):
-        ticker = f"{ticker}.NS"
-    elif exchange.upper() == "BSE" and not (ticker.endswith(".NS") or ticker.endswith(".BO")):
-        ticker = f"{ticker}.BO"
-
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    try:
-        res = requests.get(url, headers=headers, timeout=5)
-        if res.status_code == 200:
-            data = res.json()
-            result = data.get("chart", {}).get("result", [{}])[0]
-            meta = result.get("meta", {})
-            price = meta.get("regularMarketPrice")
-            company_name = meta.get("shortName") or meta.get("longName") or symbol
-            if price is not None:
-                return float(price), company_name
-    except Exception as e:
-        print(f"Error fetching live quote for {ticker}: {e}")
+
+    candidates = get_candidate_tickers(symbol, exchange)
+    for ticker in candidates:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+        try:
+            res = requests.get(url, headers=headers, timeout=5)
+            if res.status_code == 200:
+                data = res.json()
+                result = data.get("chart", {}).get("result", [{}])[0]
+                meta = result.get("meta", {})
+                price = meta.get("regularMarketPrice")
+                company_name = meta.get("shortName") or meta.get("longName") or symbol
+                if price is not None:
+                    return float(price), company_name
+        except Exception as e:
+            print(f"Error fetching live quote for candidate {ticker}: {e}")
+            
     return None, None
 
 
@@ -245,45 +258,36 @@ def get_stock_chart(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    ticker = symbol.upper().strip()
-    if exchange.upper() == "NSE" and not (ticker.endswith(".NS") or ticker.endswith(".BO")):
-        ticker = f"{ticker}.NS"
-    elif exchange.upper() == "BSE" and not (ticker.endswith(".NS") or ticker.endswith(".BO")):
-        ticker = f"{ticker}.BO"
-
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={range_str}&interval=1d"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    try:
-        res = requests.get(url, headers=headers, timeout=5)
-        if res.status_code == 200:
-            data = res.json()
-            chart_data = data.get("chart", {}).get("result", [{}])[0]
-            timestamps = chart_data.get("timestamp", [])
-            indicators = chart_data.get("indicators", {}).get("quote", [{}])[0]
-            close_prices = indicators.get("close", [])
-            
-            points = []
-            for t, p in zip(timestamps, close_prices):
-                if t and p is not None:
-                    date_str = datetime.fromtimestamp(t).strftime("%Y-%m-%d")
-                    points.append({"date": date_str, "price": round(p, 2)})
-            return {"symbol": symbol, "range": range_str, "data": points}
-    except Exception as e:
-        print(f"Error fetching chart for {ticker}: {e}")
+
+    candidates = get_candidate_tickers(symbol, exchange)
+    for ticker in candidates:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={range_str}&interval=1d"
+        try:
+            res = requests.get(url, headers=headers, timeout=5)
+            if res.status_code == 200:
+                data = res.json()
+                chart_data = data.get("chart", {}).get("result", [{}])[0]
+                timestamps = chart_data.get("timestamp", [])
+                indicators = chart_data.get("indicators", {}).get("quote", [{}])[0]
+                close_prices = indicators.get("close", [])
+                
+                points = []
+                for t, p in zip(timestamps, close_prices):
+                    if t and p is not None:
+                        date_str = datetime.fromtimestamp(t).strftime("%Y-%m-%d")
+                        points.append({"date": date_str, "price": round(p, 2)})
+                if points:
+                    return {"symbol": symbol, "range": range_str, "data": points}
+        except Exception as e:
+            print(f"Error fetching chart for candidate {ticker}: {e}")
         
     raise HTTPException(status_code=400, detail="Failed to fetch stock history data")
 
 
 def fetch_stock_details(symbol: str, exchange: str = "NSE") -> Dict[str, Any]:
-    ticker = symbol.upper().strip()
-    if exchange.upper() == "NSE" and not (ticker.endswith(".NS") or ticker.endswith(".BO")):
-        ticker = f"{ticker}.NS"
-    elif exchange.upper() == "BSE" and not (ticker.endswith(".NS") or ticker.endswith(".BO")):
-        ticker = f"{ticker}.BO"
-
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -307,72 +311,82 @@ def fetch_stock_details(symbol: str, exchange: str = "NSE") -> Dict[str, Any]:
         "sector": "Equity"
     }
     
-    try:
-        res = requests.get(url, headers=headers, timeout=5)
-        if res.status_code == 200:
-            data = res.json()
-            result = data.get("chart", {}).get("result", [{}])[0]
-            meta = result.get("meta", {})
-            
-            price = meta.get("regularMarketPrice")
-            company_name = meta.get("shortName") or meta.get("longName") or symbol
-            prev_close = meta.get("previousClose") or meta.get("chartPreviousClose")
-            high = meta.get("fiftyTwoWeekHigh") or meta.get("regularMarketDayHigh")
-            low = meta.get("fiftyTwoWeekLow") or meta.get("regularMarketDayLow")
-            
-            if price is not None:
+    candidates = get_candidate_tickers(symbol, exchange)
+    for ticker in candidates:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+        try:
+            res = requests.get(url, headers=headers, timeout=5)
+            if res.status_code == 200:
+                data = res.json()
+                result = data.get("chart", {}).get("result", [{}])[0]
+                meta = result.get("meta", {})
+                
+                price = meta.get("regularMarketPrice")
+                if price is None:
+                    continue
+                
+                currency_symbol = "₹" if (ticker.endswith(".NS") or ticker.endswith(".BO")) else "$"
+                company_name = meta.get("shortName") or meta.get("longName") or symbol
+                prev_close = meta.get("previousClose") or meta.get("chartPreviousClose")
+                high = meta.get("fiftyTwoWeekHigh") or meta.get("regularMarketDayHigh")
+                low = meta.get("fiftyTwoWeekLow") or meta.get("regularMarketDayLow")
+                
                 details["price"] = float(price)
-            if company_name:
-                details["name"] = company_name
+                if company_name:
+                    details["name"] = company_name
+                    
+                if prev_close and price:
+                    change = ((price - prev_close) / prev_close) * 100
+                    details["day_change"] = round(change, 2)
+                    
+                if high and low:
+                    details["high_low"] = f"{currency_symbol}{round(low, 2):,} / {currency_symbol}{round(high, 2):,}"
+                elif price:
+                    details["high_low"] = f"{currency_symbol}{round(price * 0.85, 2):,} / {currency_symbol}{round(price * 1.15, 2):,}"
+                    
+                # Seed other stats deterministically based on symbol hash
+                h = sum(ord(c) for c in symbol.upper())
                 
-            if prev_close and price:
-                change = ((price - prev_close) / prev_close) * 100
-                details["day_change"] = round(change, 2)
+                # Seed share count (e.g. 100M to 5B shares)
+                shares = 50000000 + (h % 90) * 50000000
+                if price:
+                    mc_val = price * shares
+                    if currency_symbol == "₹":
+                        details["market_cap"] = f"₹{round(mc_val / 10000000, 2):,} Cr"
+                    else:
+                        details["market_cap"] = f"${round(mc_val / 1000000000, 2):,} B"
+                    details["book_value"] = f"{currency_symbol}{round(price * (0.2 + (h % 3) * 0.1), 2)}"
+                    
+                # Seed P/E
+                pe_val = 12.5 + (h % 35) + round((h % 10) * 0.1, 2)
+                details["pe_ratio"] = str(pe_val)
                 
-            if high and low:
-                details["high_low"] = f"₹{round(low, 2):,} / ₹{round(high, 2):,}"
-            elif price:
-                details["high_low"] = f"₹{round(price * 0.85, 2):,} / ₹{round(price * 1.15, 2):,}"
+                # Seed Div Yield
+                div_val = 0.5 + (h % 6) * 0.5
+                details["div_yield"] = f"{div_val}%"
                 
-            # Seed other stats deterministically based on symbol hash
-            h = sum(ord(c) for c in symbol.upper())
-            
-            # Seed share count (e.g. 100M to 5B shares)
-            shares = 50000000 + (h % 90) * 50000000
-            if price:
-                mc_val = price * shares
-                details["market_cap"] = f"₹{round(mc_val / 10000000, 2):,} Cr"
-                details["book_value"] = f"₹{round(price * (0.2 + (h % 3) * 0.1), 2)}"
+                # Seed ROE / ROCE
+                roe_val = 10 + (h % 15)
+                details["roe"] = f"{roe_val}%"
+                details["roce"] = f"{roe_val + 3}%"
                 
-            # Seed P/E
-            pe_val = 12.5 + (h % 35) + round((h % 10) * 0.1, 2)
-            details["pe_ratio"] = str(pe_val)
+                details["face_value"] = f"{currency_symbol}{10 if h % 2 == 0 else 2}.00"
+                
+                # Standard sectors
+                sectors = ["Technology", "Banking & Finance", "Automobile", "Consumer Goods", "Pharmaceuticals", "Energy", "Metal & Mining"]
+                details["sector"] = sectors[h % len(sectors)]
+                
+                # Business Summary
+                details["about"] = (
+                    f"{company_name} is a leading enterprise in the {details['sector']} sector. "
+                    f"With solid ROE of {details['roe']} and a dividend yield of {details['div_yield']}, the company continues to demonstrate robust balance sheet performance. "
+                    f"It maintains significant market presence with a valuation of {details['market_cap']}."
+                )
+                return details
+                
+        except Exception as e:
+            print(f"Error fetching stock details for candidate {ticker}: {e}")
             
-            # Seed Div Yield
-            div_val = 0.5 + (h % 6) * 0.5
-            details["div_yield"] = f"{div_val}%"
-            
-            # Seed ROE / ROCE
-            roe_val = 10 + (h % 15)
-            details["roe"] = f"{roe_val}%"
-            details["roce"] = f"{roe_val + 3}%"
-            
-            details["face_value"] = f"₹{10 if h % 2 == 0 else 2}.00"
-            
-            # Standard sectors
-            sectors = ["Technology", "Banking & Finance", "Automobile", "Consumer Goods", "Pharmaceuticals", "Energy", "Metal & Mining"]
-            details["sector"] = sectors[h % len(sectors)]
-            
-            # Business Summary
-            details["about"] = (
-                f"{company_name} is a leading enterprise in the {details['sector']} sector. "
-                f"With solid ROE of {details['roe']} and a dividend yield of {details['div_yield']}, the company continues to demonstrate robust balance sheet performance. "
-                f"It maintains significant market presence with a valuation of {details['market_cap']}."
-            )
-            
-    except Exception as e:
-        print(f"Error fetching stock details from chart API: {e}")
-        
     return details
 
 
